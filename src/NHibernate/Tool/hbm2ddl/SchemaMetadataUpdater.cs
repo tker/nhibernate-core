@@ -1,4 +1,3 @@
-using System;
 using NHibernate.Cfg;
 using NHibernate.Engine;
 using NHibernate.Mapping;
@@ -9,73 +8,71 @@ namespace NHibernate.Tool.hbm2ddl
 	// Candidate to be exstensions of ISessionFactory and Configuration
 	public static class SchemaMetadataUpdater
 	{
-		public static void Update(ISessionFactoryImplementor sessionFactory)
+		public static void Update(ISessionFactory sessionFactory)
 		{
-			UpdateDialectKeywords(
-				sessionFactory.Dialect,
-				new SuppliedConnectionProviderConnectionHelper(sessionFactory.ConnectionProvider));
+			var factory = (ISessionFactoryImplementor) sessionFactory;
+			var dialect = factory.Dialect;
+			var connectionHelper = new SuppliedConnectionProviderConnectionHelper(factory.ConnectionProvider);
+			factory.Dialect.Keywords.UnionWith(GetReservedWords(dialect, connectionHelper));
 		}
 
-		public static void Update(Configuration configuration, Dialect.Dialect dialect)
+		public static void QuoteTableAndColumns(Configuration configuration)
 		{
-			UpdateDialectKeywords(
-				dialect,
-				new ManagedProviderConnectionHelper(configuration.GetDerivedProperties()));
+			ISet<string> reservedDb = GetReservedWords(configuration.GetDerivedProperties());
+			foreach (var cm in configuration.ClassMappings)
+			{
+				QuoteTable(cm.Table, reservedDb);
+			}
+			foreach (var cm in configuration.CollectionMappings)
+			{
+				QuoteTable(cm.Table, reservedDb);
+			}
 		}
 
-		static void UpdateDialectKeywords(Dialect.Dialect dialect, IConnectionHelper connectionHelper)
+		private static ISet<string> GetReservedWords(IDictionary<string, string> cfgProperties)
 		{
-			dialect.RegisterKeywords(GetReservedWords(dialect, connectionHelper));
+			var dialect = Dialect.Dialect.GetDialect(cfgProperties);
+			var connectionHelper = new ManagedProviderConnectionHelper(cfgProperties);
+			return GetReservedWords(dialect, connectionHelper);
 		}
 
-		static IEnumerable<string> GetReservedWords(Dialect.Dialect dialect, IConnectionHelper connectionHelper)
+		private static ISet<string> GetReservedWords(Dialect.Dialect dialect, IConnectionHelper connectionHelper)
 		{
+			ISet<string> reservedDb = new HashSet<string>();
 			connectionHelper.Prepare();
 			try
 			{
 				var metaData = dialect.GetDataBaseSchema(connectionHelper.Connection);
-				return metaData.GetReservedWords();
+				foreach (var rw in metaData.GetReservedWords())
+				{
+					reservedDb.Add(rw.ToLowerInvariant());
+				}
 			}
 			finally
 			{
 				connectionHelper.Release();
 			}
+			return reservedDb;
 		}
 
-		[Obsolete("Use the overload that passes dialect so keywords will be updated and persisted before auto-quoting")]
-		public static void QuoteTableAndColumns(Configuration configuration)
+		private static void QuoteTable(Table table, ICollection<string> reservedDb)
 		{
-			// Instantiates a new instance of the dialect so doesn't benefit from the Update call.
-			var dialect = Dialect.Dialect.GetDialect(configuration.GetDerivedProperties());
-			Update(configuration, dialect);
-			QuoteTableAndColumns(configuration, dialect);
-		}
-
-		public static void QuoteTableAndColumns(Configuration configuration, Dialect.Dialect dialect)
-		{
-			foreach (var cm in configuration.ClassMappings)
+			if (!table.IsQuoted && reservedDb.Contains(table.Name.ToLowerInvariant()))
 			{
-				QuoteTable(cm.Table, dialect);
-			}
-			foreach (var cm in configuration.CollectionMappings)
-			{
-				QuoteTable(cm.Table, dialect);
-			}
-		}
-
-		private static void QuoteTable(Table table, Dialect.Dialect dialect)
-		{
-			if (!table.IsQuoted && dialect.IsKeyword(table.Name))
-			{
-				table.IsQuoted = true;
+				table.Name = GetNhQuoted(table.Name);
 			}
 			foreach (var column in table.ColumnIterator)
 			{
-				if (!column.IsQuoted && dialect.IsKeyword(column.Name))
+				if (!column.IsQuoted && reservedDb.Contains(column.Name.ToLowerInvariant()))
 				{
-					column.IsQuoted = true;
+					column.Name = GetNhQuoted(column.Name);
 				}
 			}
+		}
+
+		private static string GetNhQuoted(string name)
+		{
+			return "`" + name + "`";
 		}
 	}
 }

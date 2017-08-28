@@ -4,8 +4,6 @@ using System.Xml.Linq;
 using NHibernate.Cfg;
 using NHibernate.Cfg.MappingSchema;
 using NHibernate.Dialect;
-using NHibernate.Driver;
-using NHibernate.Engine;
 using NHibernate.Linq;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Type;
@@ -29,12 +27,6 @@ namespace NHibernate.Test.NHSpecificTest.NH3405
 		protected override bool AppliesTo(Dialect.Dialect dialect)
 		{
 			return dialect is MsSql2005Dialect;
-		}
-
-		protected override bool AppliesTo(ISessionFactoryImplementor factory)
-		{
-			// No Xml support with Odbc (and likely OleDb too).
-			return factory.ConnectionProvider.Driver is SqlClientDriver;
 		}
 
 		protected override HbmMapping GetMappings()

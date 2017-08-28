@@ -77,7 +77,7 @@ namespace NHibernate.Test.Pagination
 		[Test]
 		public void PagingWithLock_NH2255()
 		{
-			if (Dialect is Oracle8iDialect)
+			if (Dialect is Oracle12cDialect)
 				Assert.Ignore(@"Oracle does not support row_limiting_clause with for_update_clause
 See: https://docs.oracle.com/database/121/SQLRF/statements_10002.htm#BABHFGAA");
 

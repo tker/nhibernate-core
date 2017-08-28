@@ -1,4 +1,3 @@
-using NHibernate.Linq.Clauses;
 using Remotion.Linq;
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.ResultOperators;
@@ -14,7 +13,7 @@ namespace NHibernate.Linq.Visitors
 	/// the HQL expression tree) means a query source may be referenced by a <c>QuerySourceReference</c>
 	/// before it has been identified - and named.
 	/// </remarks>
-	public class QuerySourceIdentifier : NhQueryModelVisitorBase
+	public class QuerySourceIdentifier : QueryModelVisitorBase
 	{
 		private readonly QuerySourceNamer _namer;
 
@@ -53,11 +52,6 @@ namespace NHibernate.Linq.Visitors
 			_namer.Add(joinClause);
 		}
 
-		public override void VisitNhJoinClause(NhJoinClause joinClause, QueryModel queryModel, int index)
-		{
-			_namer.Add(joinClause);
-		}
-
 		public override void VisitResultOperator(ResultOperatorBase resultOperator, QueryModel queryModel, int index)
 		{
 			var groupBy = resultOperator as GroupResultOperator;
@@ -68,7 +62,7 @@ namespace NHibernate.Linq.Visitors
 		public override void VisitSelectClause(SelectClause selectClause, QueryModel queryModel)
 		{
 			//Find nested query sources
-			new QueryExpressionSourceIdentifer(this).Visit(selectClause.Selector);
+			new QueryExpressionSourceIdentifer(this).VisitExpression(selectClause.Selector);
 		}
 
 		public QuerySourceNamer Namer { get { return _namer; } }

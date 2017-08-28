@@ -13,7 +13,6 @@
 		<property name="And"/>
 		<property name="Column"/>
 		<property name="Name"/>
-		<property name="Abracadabra"/>
 	</class>
 
 </hibernate-mapping>

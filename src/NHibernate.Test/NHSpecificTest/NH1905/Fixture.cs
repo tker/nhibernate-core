@@ -9,11 +9,6 @@ namespace NHibernate.Test.NHSpecificTest.NH1905
 	[TestFixture]
 	public class Fixture : BugTestCase
 	{
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			return dialect.SupportsScalarSubSelects;
-		}
-
 		[Test]
 		public void Query()
 		{

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using NHibernate.Dialect;
 using NUnit.Framework;
 
 namespace NHibernate.Test.NHSpecificTest.NH1349
@@ -28,7 +27,6 @@ namespace NHibernate.Test.NHSpecificTest.NH1349
 				}
 			}
 		}
-
 		protected override void OnTearDown()
 		{
 			using (var session = this.OpenSession())
@@ -39,12 +37,6 @@ namespace NHibernate.Test.NHSpecificTest.NH1349
 					tran.Commit();
 				}
 			}
-		}
-
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			// Mapping uses a scalar sub-select formula.
-			return Dialect.SupportsScalarSubSelects;
 		}
 
 		[Test]

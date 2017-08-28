@@ -3,10 +3,9 @@
 	public class Entity
 	{
 
-		// Assigned by reflection
-#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
+#pragma warning disable 0414  // unassigned variable
 		private long _id;
-#pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
+#pragma warning restore 0414
 
 		public virtual long Id
 		{

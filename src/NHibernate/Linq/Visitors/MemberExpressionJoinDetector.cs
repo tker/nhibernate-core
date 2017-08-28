@@ -14,7 +14,7 @@ namespace NHibernate.Linq.Visitors
 	/// Replaces them with appropriate joins, maintaining reference equality between different clauses.
 	/// This allows extracted GroupBy key expression to also be replaced so that they can continue to match replaced Select expressions
 	/// </summary>
-	internal class MemberExpressionJoinDetector : RelinqExpressionVisitor
+	internal class MemberExpressionJoinDetector : ExpressionTreeVisitor
 	{
 		private readonly IIsEntityDecider _isEntityDecider;
 		private readonly IJoiner _joiner;
@@ -30,7 +30,7 @@ namespace NHibernate.Linq.Visitors
 			_joiner = joiner;
 		}
 
-		protected override Expression VisitMember(MemberExpression expression)
+		protected override Expression VisitMemberExpression(MemberExpression expression)
 		{
 			var isIdentifier = _isEntityDecider.IsIdentifier(expression.Expression.Type, expression.Member.Name);
 			if (isIdentifier)
@@ -38,7 +38,7 @@ namespace NHibernate.Linq.Visitors
 			if (!isIdentifier)
 				_memberExpressionDepth++;
 
-			var result = base.VisitMember(expression);
+			var result = base.VisitMemberExpression(expression);
 			
 			if (!isIdentifier)
 				_memberExpressionDepth--;
@@ -55,33 +55,33 @@ namespace NHibernate.Linq.Visitors
 			return result;
 		}
 
-		protected override Expression VisitSubQuery(SubQueryExpression expression)
+		protected override Expression VisitSubQueryExpression(SubQueryExpression expression)
 		{
-			expression.QueryModel.TransformExpressions(Visit);
+			expression.QueryModel.TransformExpressions(VisitExpression);
 			return expression;
 		}
 
-		protected override Expression VisitConditional(ConditionalExpression expression)
+		protected override Expression VisitConditionalExpression(ConditionalExpression expression)
 		{
 			var oldRequiresJoinForNonIdentifier = _requiresJoinForNonIdentifier;
 			_requiresJoinForNonIdentifier = !_preventJoinsInConditionalTest && _requiresJoinForNonIdentifier;
-			var newTest = Visit(expression.Test);
+			var newTest = VisitExpression(expression.Test);
 			_requiresJoinForNonIdentifier = oldRequiresJoinForNonIdentifier;
-			var newFalse = Visit(expression.IfFalse);
-			var newTrue = Visit(expression.IfTrue);
+			var newFalse = VisitExpression(expression.IfFalse);
+			var newTrue = VisitExpression(expression.IfTrue);
 			if ((newTest != expression.Test) || (newFalse != expression.IfFalse) || (newTrue != expression.IfTrue))
 				return Expression.Condition(newTest, newTrue, newFalse);
 			return expression;
 		}
 
-		protected override Expression VisitExtension(Expression expression)
+		protected override Expression VisitExtensionExpression(ExtensionExpression expression)
 		{
 			// Nominated expressions need to prevent joins on non-Identifier member expressions 
 			// (for the test expression of conditional expressions only)
 			// Otherwise an extra join is created and the GroupBy and Select clauses will not match
 			var old = _preventJoinsInConditionalTest;
-			_preventJoinsInConditionalTest = expression is NhNominatedExpression;
-			var expr = base.VisitExtension(expression);
+			_preventJoinsInConditionalTest = (NhExpressionType)expression.NodeType == NhExpressionType.Nominator;
+			var expr = base.VisitExtensionExpression(expression);
 			_preventJoinsInConditionalTest = old;
 			return expr;
 		}
@@ -90,18 +90,18 @@ namespace NHibernate.Linq.Visitors
 		{
 			// The select clause typically requires joins for non-Identifier member access
 			_requiresJoinForNonIdentifier = true;
-			selectClause.TransformExpressions(Visit);
+			selectClause.TransformExpressions(VisitExpression);
 			_requiresJoinForNonIdentifier = false;
 		}
 
 		public void Transform(ResultOperatorBase resultOperator)
 		{
-			resultOperator.TransformExpressions(Visit);
+			resultOperator.TransformExpressions(VisitExpression);
 		}
 
 		public void Transform(Ordering ordering)
 		{
-			ordering.TransformExpressions(Visit);
+			ordering.TransformExpressions(VisitExpression);
 		}
 	}
 }

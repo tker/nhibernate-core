@@ -7,26 +7,26 @@ namespace NHibernate.Linq.Visitors
 	/// <summary>
 	/// Some conditional expressions can be reduced to just their IfTrue or IfFalse part.
 	/// </summary>
-	internal class SimplifyConditionalVisitor :RelinqExpressionVisitor
+	internal class SimplifyConditionalVisitor :ExpressionTreeVisitor
 	{
-		protected override Expression VisitConditional(ConditionalExpression expression)
+		protected override Expression VisitConditionalExpression(ConditionalExpression expression)
 		{
-			var testExpression = Visit(expression.Test);
+			var testExpression = VisitExpression(expression.Test);
 
 			bool testExprResult;
 			if (VisitorUtil.IsBooleanConstant(testExpression, out testExprResult))
 			{
 				if (testExprResult)
-					return Visit(expression.IfTrue);
+					return VisitExpression(expression.IfTrue);
 
-				return Visit(expression.IfFalse);
+				return VisitExpression(expression.IfFalse);
 			}
 
-			return base.VisitConditional(expression);
+			return base.VisitConditionalExpression(expression);
 		}
 
 
-		protected override Expression VisitBinary(BinaryExpression expression)
+		protected override Expression VisitBinaryExpression(BinaryExpression expression)
 		{
 			// See NH-3423. Conditional expression where the test expression is a comparison
 			// of a construction expression and null will happen in WCF DS.
@@ -42,7 +42,7 @@ namespace NHibernate.Linq.Visitors
 					return Expression.Constant(true);
 			}
 
-			return base.VisitBinary(expression);
+			return base.VisitBinaryExpression(expression);
 		}
 
 

@@ -1,5 +1,4 @@
 using System.Collections;
-using NHibernate.Dialect;
 using NUnit.Framework;
 
 namespace NHibernate.Test.TypedManyToOne
@@ -15,12 +14,6 @@ namespace NHibernate.Test.TypedManyToOne
 		protected override IList Mappings
 		{
 			get { return new[] { "TypedManyToOne.Customer.hbm.xml" }; }
-		}
-
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			// Mapping uses check constraint, which Ms SQL CE does not support.
-			return !(Dialect is MsSqlCeDialect);
 		}
 
 		[Test]

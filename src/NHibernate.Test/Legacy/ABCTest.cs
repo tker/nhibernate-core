@@ -39,8 +39,6 @@ namespace NHibernate.Test.Legacy
 		[Test]
 		public void Subselect()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore("Dialect does not support scalar sub-select, used by Map formula in B (C1 and C2) mapping");
 			using (ISession s = OpenSession())
 			using (ITransaction t = s.BeginTransaction())
 			{
@@ -80,8 +78,6 @@ namespace NHibernate.Test.Legacy
 		[Test]
 		public void Subclassing()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore("Dialect does not support scalar sub-select, used by Map formula in B (C1 and C2) mapping");
 			ISession s = OpenSession();
 			ITransaction t = s.BeginTransaction();
 			C1 c1 = new C1();

@@ -2,11 +2,11 @@
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.Expressions;
 using Remotion.Linq.Parsing;
-using Remotion.Linq.Parsing.ExpressionVisitors;
+using Remotion.Linq.Parsing.ExpressionTreeVisitors;
 
 namespace NHibernate.Linq.Visitors
 {
-	internal class PagingRewriterSelectClauseVisitor : RelinqExpressionVisitor
+	internal class PagingRewriterSelectClauseVisitor : ExpressionTreeVisitor
 	{
 		private readonly FromClauseBase querySource;
 
@@ -17,18 +17,18 @@ namespace NHibernate.Linq.Visitors
 
 		public Expression Swap(Expression expression)
 		{
-			return TransparentIdentifierRemovingExpressionVisitor.ReplaceTransparentIdentifiers(Visit(expression));
+			return TransparentIdentifierRemovingExpressionTreeVisitor.ReplaceTransparentIdentifiers(VisitExpression(expression));
 		}
 
-		protected override Expression VisitQuerySourceReference(QuerySourceReferenceExpression expression)
+		protected override Expression VisitQuerySourceReferenceExpression(QuerySourceReferenceExpression expression)
 		{
 			var innerSelector = GetSubQuerySelectorOrNull(expression);
 			if (innerSelector != null)
 			{
-				return Visit(innerSelector);
+				return VisitExpression(innerSelector);
 			}
 
-			return base.VisitQuerySourceReference(expression);
+			return base.VisitQuerySourceReferenceExpression(expression);
 		}
 
 		/// <summary>

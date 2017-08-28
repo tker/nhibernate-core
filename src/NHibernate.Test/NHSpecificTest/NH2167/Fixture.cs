@@ -1,7 +1,6 @@
 ﻿using NHibernate.Cfg.MappingSchema;
 using NHibernate.Criterion;
-using NHibernate.Driver;
-using NHibernate.Engine;
+using NHibernate.Dialect;
 using NHibernate.Mapping.ByCode;
 using NUnit.Framework;
 
@@ -11,14 +10,7 @@ namespace NHibernate.Test.NHSpecificTest.NH2167
 	{
 		protected override bool AppliesTo(Dialect.Dialect dialect)
 		{
-			return TestDialect.SupportsComplexExpressionInGroupBy;
-		}
-
-		protected override bool AppliesTo(ISessionFactoryImplementor factory)
-		{
-			// When not using a named prefix, the driver use positional parameters, causing parameterized
-			// expression used in group by and select to be not be considered as the same expression.
-			return ((DriverBase)factory.ConnectionProvider.Driver).UseNamedPrefixInParameter;
+			return !(dialect is FirebirdDialect);
 		}
 
 		protected override HbmMapping GetMappings()

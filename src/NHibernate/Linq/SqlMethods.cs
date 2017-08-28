@@ -11,7 +11,6 @@ namespace NHibernate.Linq
 		/// will be translated.) This method can only be used in Linq2NHibernate expressions, and will throw
 		/// if called directly.
 		/// </summary>
-		[NoPreEvaluation]
 		public static bool Like(this string matchExpression, string sqlLikePattern)
 		{
 			throw new NotSupportedException(
@@ -25,7 +24,6 @@ namespace NHibernate.Linq
 		/// will be translated.) This method can only be used in Linq2NHibernate expressions, and will throw
 		/// if called directly.
 		/// </summary>
-		[NoPreEvaluation]
 		public static bool Like(this string matchExpression, string sqlLikePattern, char escapeCharacter)
 		{
 			throw new NotSupportedException(

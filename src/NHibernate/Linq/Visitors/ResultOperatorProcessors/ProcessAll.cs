@@ -12,7 +12,7 @@ namespace NHibernate.Linq.Visitors.ResultOperatorProcessors
 		public void Process(AllResultOperator resultOperator, QueryModelVisitor queryModelVisitor, IntermediateHqlTree tree)
 		{
 			tree.AddWhereClause(tree.TreeBuilder.BooleanNot(
-                               HqlGeneratorExpressionVisitor.Visit(resultOperator.Predicate, queryModelVisitor.VisitorParameters).
+				HqlGeneratorExpressionTreeVisitor.Visit(resultOperator.Predicate, queryModelVisitor.VisitorParameters).
 					ToBooleanExpression()));
 
 			if (tree.IsRoot)

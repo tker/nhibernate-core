@@ -1,17 +1,10 @@
-﻿using NHibernate.Dialect;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace NHibernate.Test.NHSpecificTest.NH1834
 {
 	[TestFixture]
 	public class Fixture : BugTestCase
 	{
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			// Mapping uses a scalar sub-select formula.
-			return dialect.SupportsScalarSubSelects;
-		}
-
 		protected override void OnSetUp()
 		{
 			base.OnSetUp();

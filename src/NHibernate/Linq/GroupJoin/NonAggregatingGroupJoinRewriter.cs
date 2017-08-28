@@ -154,7 +154,7 @@ namespace NHibernate.Linq.Visitors
 
 	}
 
-	internal class QuerySourceUsageLocator : RelinqExpressionVisitor
+	internal class QuerySourceUsageLocator : ExpressionTreeVisitor
 	{
 		private readonly IQuerySource _querySource;
 		private bool _references;
@@ -184,11 +184,11 @@ namespace NHibernate.Linq.Visitors
 
 		private Expression ExpressionSearcher(Expression arg)
 		{
-			Visit(arg);
+			VisitExpression(arg);
 			return arg;
 		}
 
-		protected override Expression VisitQuerySourceReference(QuerySourceReferenceExpression expression)
+		protected override Expression VisitQuerySourceReferenceExpression(QuerySourceReferenceExpression expression)
 		{
 			if (expression.ReferencedQuerySource == _querySource)
 			{

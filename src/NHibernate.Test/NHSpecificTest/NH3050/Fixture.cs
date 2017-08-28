@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 
 using NHibernate.Engine.Query;
 using NHibernate.Linq;
@@ -145,11 +144,11 @@ namespace NHibernate.Test.NHSpecificTest.NH3050
 						}
 					};
 
-				var queryExecutorTask = Task.Run(queryExecutor);
-				var cacheCleanerTask = Task.Run(cacheCleaner);
+				var queryExecutorAsyncResult = queryExecutor.BeginInvoke(null, null);
+				var cacheCleanerAsyncResult = cacheCleaner.BeginInvoke(null, null);
 
-				queryExecutorTask.Wait();
-				cacheCleanerTask.Wait();
+				queryExecutor.EndInvoke(queryExecutorAsyncResult);
+				cacheCleaner.EndInvoke(cacheCleanerAsyncResult);
 
 				Assert.IsTrue(allLinqQueriesSucceeded);
 			}

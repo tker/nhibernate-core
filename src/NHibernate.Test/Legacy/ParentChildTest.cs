@@ -387,7 +387,7 @@ namespace NHibernate.Test.Legacy
 			Assert.AreEqual(1,
 			                s.CreateQuery("select c from c in class ContainerX where 's' = c.ManyToMany[(3+1)/4-1].Name").List().
 			                	Count);
-			if (Dialect.SupportsScalarSubSelects)
+			if (Dialect.SupportsSubSelects)
 			{
 				Assert.AreEqual(1,
 				                s.CreateQuery(

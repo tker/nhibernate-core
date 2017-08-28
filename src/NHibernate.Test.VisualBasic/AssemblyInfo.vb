@@ -1,6 +1,3 @@
-﻿Imports System.Reflection
-Imports NUnit.Framework
+﻿Imports NUnit.Framework
 
-<Assembly: CLSCompliant(False)>
-<Assembly: AssemblyDelaySign(False)>
-<Assembly: LevelOfParallelism(0)>
+<assembly: LevelOfParallelism(0)>

@@ -201,7 +201,6 @@ namespace NHibernate.Impl
 					if (options.UserSuppliedConnection != null)
 						throw new SessionException("Cannot simultaneously share transaction context and specify connection");
 					connectionManager = sharedOptions.ConnectionManager;
-					connectionManager.AddDependentSession(this);
 				}
 				else
 				{
@@ -299,8 +298,8 @@ namespace NHibernate.Impl
 				{
 					if (!_transactionCoordinatorShared)
 						return connectionManager.Close();
-					connectionManager.RemoveDependentSession(this);
-					return null;
+					else
+						return null;
 				}
 				finally
 				{
@@ -320,23 +319,26 @@ namespace NHibernate.Impl
 			using (new SessionIdLoggingContext(SessionId))
 			{
 				log.Debug("transaction completion");
-
-				persistenceContext.AfterTransactionCompletion();
-				actionQueue.AfterTransactionCompletion(success);
-
 				if (Factory.Statistics.IsStatisticsEnabled)
 				{
 					Factory.StatisticsImplementor.EndTransaction(success);
 				}
 
-				try
+				connectionManager.AfterTransaction();
+				persistenceContext.AfterTransactionCompletion();
+				actionQueue.AfterTransactionCompletion(success);
+				if (!_transactionCoordinatorShared)
 				{
-					Interceptor.AfterTransactionCompletion(tx);
+					try
+					{
+						Interceptor.AfterTransactionCompletion(tx);
+					}
+					catch (Exception t)
+					{
+						log.Error("exception in interceptor afterTransactionCompletion()", t);
+					}
 				}
-				catch (Exception t)
-				{
-					log.Error("exception in interceptor afterTransactionCompletion()", t);
-				}
+
 
 				//if (autoClear)
 				//	Clear();
@@ -2099,27 +2101,20 @@ namespace NHibernate.Impl
 			using (new SessionIdLoggingContext(SessionId))
 			{
 				log.Debug("before transaction completion");
-				FlushBeforeTransactionCompletion();
 				actionQueue.BeforeTransactionCompletion();
-				try
+				if (!_transactionCoordinatorShared)
 				{
-					Interceptor.BeforeTransactionCompletion(tx);
-				}
-				catch (Exception e)
-				{
-					log.Error("exception in interceptor BeforeTransactionCompletion()", e);
+					try
+					{
+						Interceptor.BeforeTransactionCompletion(tx);
+					}
+					catch (Exception e)
+					{
+						log.Error("exception in interceptor BeforeTransactionCompletion()", e);
 
-					throw;
+						throw;
+					}
 				}
-			}
-		}
-
-		public override void FlushBeforeTransactionCompletion()
-		{
-			using (new SessionIdLoggingContext(SessionId))
-			{
-				if (FlushMode != FlushMode.Manual)
-					Flush();
 			}
 		}
 

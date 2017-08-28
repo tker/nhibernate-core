@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Linq.Expressions;
-using NHibernate.Linq.Visitors;
 using NHibernate.Util;
 
 namespace NHibernate.Linq.Expressions
 {
 	public class NhAverageExpression : NhAggregatedExpression
 	{
-		public NhAverageExpression(Expression expression) : base(expression, CalculateAverageType(expression.Type))
+		public NhAverageExpression(Expression expression) : base(expression, CalculateAverageType(expression.Type), NhExpressionType.Average)
 		{
 		}
 
-		static System.Type CalculateAverageType(System.Type inputType)
+		private static System.Type CalculateAverageType(System.Type inputType)
 		{
 			var isNullable = false;
 
@@ -28,7 +27,7 @@ namespace NHibernate.Linq.Expressions
 				case TypeCode.Int64:
 				case TypeCode.Single:
 				case TypeCode.Double:
-					return isNullable ? typeof(double?) : typeof(double);
+					return isNullable ? typeof(double?) : typeof (double);
 				case TypeCode.Decimal:
 					return isNullable ? typeof(decimal?) : typeof(decimal);
 			}
@@ -39,11 +38,6 @@ namespace NHibernate.Linq.Expressions
 		public override Expression CreateNew(Expression expression)
 		{
 			return new NhAverageExpression(expression);
-		}
-
-		protected override Expression Accept(NhExpressionVisitor visitor)
-		{
-			return visitor.VisitNhAverage(this);
 		}
 	}
 }

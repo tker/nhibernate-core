@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using NHibernate.Linq.Functions;
 using NHibernate.Util;
-using Remotion.Linq.Parsing.ExpressionVisitors.Transformation;
+using Remotion.Linq.Parsing.ExpressionTreeVisitors.Transformation;
 
 namespace NHibernate.Linq.ExpressionTransformers
 {

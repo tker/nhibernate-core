@@ -8,12 +8,9 @@ namespace NHibernate.Test.NHSpecificTest.NH3332
 	{
 		private ISet<DataTypeDescription> _dataTypeDescriptions = new HashSet<DataTypeDescription>();
 		private ISet<MasterEntity> _masterEntities = new HashSet<MasterEntity>();
-		// Assigned by reflection
-#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
 		private Int32 _id;
-		private Byte[] _rowVersionId;
-#pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
 		private String _name;
+		private Byte[] _rowVersionId;
 
 		public override int GetHashCode()
 		{

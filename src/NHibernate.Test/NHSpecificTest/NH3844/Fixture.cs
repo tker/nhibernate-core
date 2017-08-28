@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using NHibernate.Dialect;
 using NHibernate.Driver;
 using NHibernate.Engine;
 using NHibernate.Linq;
@@ -11,7 +12,7 @@ namespace NHibernate.Test.NHSpecificTest.NH3844
 	{
 		protected override bool AppliesTo(Dialect.Dialect dialect)
 		{
-			return TestDialect.SupportsComplexExpressionInGroupBy;
+			return !(dialect is FirebirdDialect) && !(dialect is MsSqlCeDialect);
 		}
 
 		protected override bool AppliesTo(ISessionFactoryImplementor factory)

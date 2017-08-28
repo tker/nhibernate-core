@@ -12,7 +12,7 @@ namespace NHibernate.Linq.Visitors
 	/// Analyze the select clause to determine what parts can be translated
 	/// fully to HQL, and some other properties of the clause.
 	/// </summary>
-	class SelectClauseHqlNominator : RelinqExpressionVisitor
+	class SelectClauseHqlNominator : ExpressionTreeVisitor
 	{
 		private readonly ILinqToHqlGeneratorsRegistry _functionRegistry;
 
@@ -37,7 +37,7 @@ namespace NHibernate.Linq.Visitors
 			_functionRegistry = parameters.SessionFactory.Settings.LinqToHqlGeneratorsRegistry;
 		}
 
-		internal Expression Nominate(Expression expression)
+		internal Expression Visit(Expression expression)
 		{
 			HqlCandidates = new HashSet<Expression>();
 			ContainsUntranslatedMethodCalls = false;
@@ -45,18 +45,18 @@ namespace NHibernate.Linq.Visitors
 			_stateStack = new Stack<bool>();
 			_stateStack.Push(false);
 
-			return Visit(expression);
+			return VisitExpression(expression);
 		}
 
-		public override Expression Visit(Expression expression)
+		public override Expression VisitExpression(Expression expression)
 		{
 			if (expression == null)
 				return null;
 
-			if (expression is NhNominatedExpression nominatedExpression)
+			if (expression.NodeType == (ExpressionType)NhExpressionType.Nominator)
 			{
 				// Add the nominated clause and strip the nominator wrapper from the select expression
-				var innerExpression = nominatedExpression.Expression;
+				var innerExpression = ((NhNominatedExpression)expression).Expression;
 				HqlCandidates.Add(innerExpression);
 				return innerExpression;
 			}
@@ -86,7 +86,7 @@ namespace NHibernate.Linq.Visitors
 					return expression;
 				}
 
-				expression = base.Visit(expression);
+				expression = base.VisitExpression(expression);
 
 				if (_canBeCandidate)
 				{
@@ -118,14 +118,14 @@ namespace NHibernate.Linq.Visitors
 				if (_functionRegistry.TryGetGenerator(methodCallExpression.Method, out methodGenerator))
 				{
 					return methodCallExpression.Object == null || // is static or extension method
-					       methodCallExpression.Object.NodeType != ExpressionType.Constant; // does not belong to parameter 
+						   methodCallExpression.Object.NodeType != ExpressionType.Constant; // does not belong to parameter 
 				}
 			}
-			else if (expression is NhSumExpression ||
-			         expression is NhCountExpression ||
-			         expression is NhAverageExpression ||
-			         expression is NhMaxExpression ||
-			         expression is NhMinExpression)
+			else if (expression.NodeType == (ExpressionType)NhExpressionType.Sum ||
+						expression.NodeType == (ExpressionType)NhExpressionType.Count ||
+						expression.NodeType == (ExpressionType)NhExpressionType.Average ||
+						expression.NodeType == (ExpressionType)NhExpressionType.Max ||
+						expression.NodeType == (ExpressionType)NhExpressionType.Min)
 			{
 				return true;
 			}
@@ -172,7 +172,7 @@ namespace NHibernate.Linq.Visitors
 
 		private static bool CanBeEvaluatedInHqlStatementShortcut(Expression expression)
 		{
-			return expression is NhCountExpression;
+			return ((NhExpressionType)expression.NodeType) == NhExpressionType.Count;
 		}
 	}
 }

@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using NHibernate.Util;
 using Remotion.Linq.Clauses.ResultOperators;
 using Remotion.Linq.Clauses.StreamedData;
-using Remotion.Linq.Parsing.ExpressionVisitors;
+using Remotion.Linq.Parsing.ExpressionTreeVisitors;
 
 namespace NHibernate.Linq.Visitors.ResultOperatorProcessors
 {
@@ -15,7 +15,7 @@ namespace NHibernate.Linq.Visitors.ResultOperatorProcessors
 			var inputType = inputExpr.Type;
 			var paramExpr = Expression.Parameter(inputType, "item");
 			var accumulatorFunc = Expression.Lambda(
-				ReplacingExpressionVisitor.Replace(inputExpr, paramExpr, resultOperator.Func.Body),
+				ReplacingExpressionTreeVisitor.Replace(inputExpr, paramExpr, resultOperator.Func.Body),
 				resultOperator.Func.Parameters[0],
 				paramExpr);
 

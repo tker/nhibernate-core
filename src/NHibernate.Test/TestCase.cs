@@ -238,13 +238,13 @@ namespace NHibernate.Test
 
 		private bool CheckConnectionsWereClosed()
 		{
-			if (_sessionFactory?.DebugConnectionProvider?.HasOpenConnections != true)
+			if (_sessionFactory?.ConnectionProvider?.HasOpenConnections != true)
 			{
 				return true;
 			}
 
 			log.Error("Test case didn't close all open connections, closing");
-			_sessionFactory.DebugConnectionProvider.CloseAllConnections();
+			_sessionFactory.ConnectionProvider.CloseAllConnections();
 			return false;
 		}
 
@@ -276,7 +276,7 @@ namespace NHibernate.Test
 
 		protected virtual void DropSchema()
 		{
-			if (Sfi?.ConnectionProvider.Driver is FirebirdClientDriver fbDriver)
+			if (Sfi.ConnectionProvider.Driver is FirebirdClientDriver fbDriver)
 			{
 				// Firebird will pool each connection created during the test and will marked as used any table
 				// referenced by queries. It will at best delays those tables drop until connections are actually

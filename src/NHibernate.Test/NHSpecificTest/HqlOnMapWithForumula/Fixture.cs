@@ -13,11 +13,6 @@ namespace NHibernate.Test.NHSpecificTest.HqlOnMapWithForumula
 			get { return "HqlOnMapWithForumula"; }
 		}
 
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			// Mapping uses a scalar sub-select formula.
-			return Dialect.SupportsScalarSubSelects;
-		}
 
 		[Test]
 		public void TestBug()

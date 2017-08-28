@@ -9,15 +9,16 @@ using Remotion.Linq.Parsing;
 
 namespace NHibernate.Linq.ReWriters
 {
-	public class QueryReferenceExpressionFlattener : RelinqExpressionVisitor
+	public class QueryReferenceExpressionFlattener : ExpressionTreeVisitor
 	{
 		private readonly QueryModel _model;
 
 		internal static readonly System.Type[] FlattenableResultOperators =
 		{
-			typeof(FetchOneRequest),
-			typeof(FetchManyRequest),
-			typeof(OptionsResultOperator)
+			typeof (CacheableResultOperator),
+			typeof (TimeoutResultOperator),
+			typeof (FetchOneRequest),
+			typeof (FetchManyRequest)
 		};
 
 		private QueryReferenceExpressionFlattener(QueryModel model)
@@ -28,16 +29,16 @@ namespace NHibernate.Linq.ReWriters
 		public static void ReWrite(QueryModel model)
 		{
 			var visitor = new QueryReferenceExpressionFlattener(model);
-			model.TransformExpressions(visitor.Visit);
+			model.TransformExpressions(visitor.VisitExpression);
 		}
 
-		protected override Expression VisitSubQuery(SubQueryExpression subQuery)
+		protected override Expression VisitSubQueryExpression(SubQueryExpression subQuery)
 		{
 			var subQueryModel = subQuery.QueryModel;
 			var hasBodyClauses = subQueryModel.BodyClauses.Count > 0;
 			if (hasBodyClauses)
 			{
-				return base.VisitSubQuery(subQuery);
+				return base.VisitSubQueryExpression(subQuery);
 			}
 
 			var resultOperators = subQueryModel.ResultOperators;
@@ -56,7 +57,7 @@ namespace NHibernate.Linq.ReWriters
 				}
 			}
 
-			return base.VisitSubQuery(subQuery);
+			return base.VisitSubQueryExpression(subQuery);
 		}
 
 		private static bool HasJustAllFlattenableOperator(IEnumerable<ResultOperatorBase> resultOperators)
@@ -64,7 +65,7 @@ namespace NHibernate.Linq.ReWriters
 			return resultOperators.All(x => FlattenableResultOperators.Contains(x.GetType()));
 		}
 
-		protected override Expression VisitQuerySourceReference(QuerySourceReferenceExpression expression)
+		protected override Expression VisitQuerySourceReferenceExpression(QuerySourceReferenceExpression expression)
 		{
 			var fromClauseBase = expression.ReferencedQuerySource as FromClauseBase;
 
@@ -75,7 +76,7 @@ namespace NHibernate.Linq.ReWriters
 				return fromClauseBase.FromExpression;
 			}
 
-			return base.VisitQuerySourceReference(expression);
+			return base.VisitQuerySourceReferenceExpression(expression);
 		}
 	}
 }

@@ -2,7 +2,6 @@
 using System.Linq;
 using NHibernate.AdoNet;
 using NHibernate.Cfg;
-using NHibernate.Dialect;
 using NHibernate.Engine;
 using NHibernate.Linq;
 using NUnit.Framework;
@@ -11,12 +10,6 @@ namespace NHibernate.Test.Linq
 {
 	public class QueryTimeoutTests : LinqTestCase
 	{
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			//SqlServer CE does not support timeouts
-			return !(dialect is MsSqlCeDialect);
-		}
-
 		protected override void Configure(Configuration configuration)
 		{
 			base.Configure(configuration);
@@ -30,9 +23,7 @@ namespace NHibernate.Test.Linq
 		{
 			var result = (from e in db.Customers
 						  where e.CompanyName == "Corp"
-						  select e)
-				.SetOptions(o => o.SetTimeout(17))
-				.ToList();
+						  select e).Timeout(17).ToList();
 
 			Assert.That(TimeoutCatchingNonBatchingBatcher.LastCommandTimeout, Is.EqualTo(17));
 		}
@@ -43,10 +34,7 @@ namespace NHibernate.Test.Linq
 		{
 			var result = (from e in db.Customers
 						  where e.CompanyName == "Corp"
-						  select e)
-				.Skip(5).Take(5)
-				.SetOptions(o => o.SetTimeout(17))
-				.ToList();
+						  select e).Skip(5).Take(5).Timeout(17).ToList();
 
 			Assert.That(TimeoutCatchingNonBatchingBatcher.LastCommandTimeout, Is.EqualTo(17));
 		}
@@ -58,9 +46,7 @@ namespace NHibernate.Test.Linq
 			var result = (from e in db.Customers
 						  orderby e.CompanyName
 						  select e)
-				.SetOptions(o => o.SetTimeout(17))
-				.Skip(5).Take(5)
-				.ToList();
+				.Timeout(17).Skip(5).Take(5).ToList();
 
 			Assert.That(TimeoutCatchingNonBatchingBatcher.LastCommandTimeout, Is.EqualTo(17));
 		}
@@ -69,9 +55,8 @@ namespace NHibernate.Test.Linq
 		[Test]
 		public void CanSetTimeoutOnLinqGroupPageQuery()
 		{
-			var subQuery = db.Customers
-				.Where(e2 => e2.CompanyName.Contains("a")).Select(e2 => e2.CustomerId)
-				.SetOptions(o => o.SetTimeout(18)); // This Timeout() should not cause trouble, and be ignored.
+			var subQuery = db.Customers.Where(e2 => e2.CompanyName.Contains("a")).Select(e2 => e2.CustomerId)
+							 .Timeout(18); // This Timeout() should not cause trouble, and be ignored.
 
 			var result = (from e in db.Customers
 						  where subQuery.Contains(e.CustomerId)
@@ -79,8 +64,7 @@ namespace NHibernate.Test.Linq
 							  into g
 							  select new { g.Key, Count = g.Count() })
 				.Skip(5).Take(5)
-				.SetOptions(o => o.SetTimeout(17))
-				.ToList();
+				.Timeout(17).ToList();
 
 			Assert.That(TimeoutCatchingNonBatchingBatcher.LastCommandTimeout, Is.EqualTo(17));
 		}

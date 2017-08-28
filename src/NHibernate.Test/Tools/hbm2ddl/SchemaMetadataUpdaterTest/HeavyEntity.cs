@@ -7,6 +7,5 @@ namespace NHibernate.Test.Tools.hbm2ddl.SchemaMetadataUpdaterTest
 		public string And { get; set; }
 		public string Column { get; set; }
 		public string Name { get; set; }
-		public string Abracadabra { get; set; }
 	}
 }

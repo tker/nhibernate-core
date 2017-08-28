@@ -8,11 +8,11 @@ using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.Expressions;
 using Remotion.Linq.Clauses.ResultOperators;
 using Remotion.Linq.Parsing;
-using Remotion.Linq.Parsing.ExpressionVisitors;
+using Remotion.Linq.Parsing.ExpressionTreeVisitors;
 
 namespace NHibernate.Linq.ReWriters
 {
-	public class MergeAggregatingResultsRewriter : NhQueryModelVisitorBase
+	public class MergeAggregatingResultsRewriter : QueryModelVisitorBase
 	{
 		private MergeAggregatingResultsRewriter()
 		{
@@ -85,7 +85,7 @@ namespace NHibernate.Linq.ReWriters
 		{
 			if (expression.NodeType == ExpressionType.MemberInit || 
 				expression.NodeType == ExpressionType.New ||
-				expression is QuerySourceReferenceExpression)
+				expression.NodeType == QuerySourceReferenceExpression.ExpressionType)
 			{
 				//Probably it should be done by CountResultOperatorProcessor
 				return new NhStarExpression(expression);
@@ -95,7 +95,7 @@ namespace NHibernate.Linq.ReWriters
 		}
 	}
 
-	internal class MergeAggregatingResultsInExpressionRewriter : RelinqExpressionVisitor
+	internal class MergeAggregatingResultsInExpressionRewriter : ExpressionTreeVisitor
 	{
 		private readonly NameGenerator _nameGenerator;
 
@@ -108,16 +108,16 @@ namespace NHibernate.Linq.ReWriters
 		{
 			var visitor = new MergeAggregatingResultsInExpressionRewriter(nameGenerator);
 
-			return visitor.Visit(expression);
+			return visitor.VisitExpression(expression);
 		}
 
-		protected override Expression VisitSubQuery(SubQueryExpression expression)
+		protected override Expression VisitSubQueryExpression(SubQueryExpression expression)
 		{
 			MergeAggregatingResultsRewriter.ReWrite(expression.QueryModel);
 			return expression;
 		}
 
-		protected override Expression VisitMethodCall(MethodCallExpression m)
+		protected override Expression VisitMethodCallExpression(MethodCallExpression m)
 		{
 			if (m.Method.DeclaringType == typeof(Queryable) ||
 				m.Method.DeclaringType == typeof(Enumerable))
@@ -152,20 +152,18 @@ namespace NHibernate.Linq.ReWriters
 				}
 			}
 
-			return base.VisitMethodCall(m);
+			return base.VisitMethodCallExpression(m);
 		}
 
 		private Expression CreateAggregate(Expression fromClauseExpression, LambdaExpression body, Func<Expression, Expression> aggregateFactory, Func<ResultOperatorBase> resultOperatorFactory)
 		{
 			var fromClause = new MainFromClause(_nameGenerator.GetNewName(), body.Parameters[0].Type, fromClauseExpression);
 			var selectClause = body.Body;
-			selectClause = ReplacingExpressionVisitor.Replace(
-				body.Parameters[0],
-				new QuerySourceReferenceExpression(fromClause),
-				selectClause);
-			var queryModel = new QueryModel(
-				fromClause,
-				new SelectClause(aggregateFactory(selectClause)));
+			selectClause = ReplacingExpressionTreeVisitor.Replace(body.Parameters[0],
+																  new QuerySourceReferenceExpression(
+																	fromClause), selectClause);
+			var queryModel = new QueryModel(fromClause,
+											new SelectClause(aggregateFactory(selectClause)));
 
 			// TODO - this sucks, but we use it to get the Type of the SubQueryExpression correct
 			queryModel.ResultOperators.Add(resultOperatorFactory());

@@ -62,7 +62,6 @@ namespace NHibernate.Hql.Ast.ANTLR
 		private IASTFactory _nodeFactory;
 		private readonly List<AssignmentSpecification> assignmentSpecifications = new List<AssignmentSpecification>();
 		private int numberOfParametersInSetClause;
-		private Stack<int> clauseStack=new Stack<int>();
 
 		public HqlSqlWalker(QueryTranslatorImpl qti,
 					  ISessionFactoryImplementor sfi,
@@ -86,7 +85,7 @@ namespace NHibernate.Hql.Ast.ANTLR
 		/*
 		protected override void Mismatch(IIntStream input, int ttype, BitSet follow)
 		{
-			throw new MismatchedTokenException(ttype, input);
+		   throw new MismatchedTokenException(ttype, input);
 		}
 
 		public override object RecoverFromMismatchedSet(IIntStream input, RecognitionException e, BitSet follow)
@@ -408,17 +407,7 @@ namespace NHibernate.Hql.Ast.ANTLR
 
 		void HandleClauseStart(int clauseType)
 		{
-			clauseStack.Push(_currentClauseType);
 			_currentClauseType = clauseType;
-		}
-
-		void HandleClauseEnd(int clauseType)
-		{
-			if (clauseType != _currentClauseType)
-			{
-				throw new SemanticException("Mismatched clause parsing");
-			}
-			_currentClauseType=clauseStack.Pop();
 		}
 
 		IASTNode CreateIntoClause(string path, IASTNode propertySpec)
@@ -967,8 +956,8 @@ namespace NHibernate.Hql.Ast.ANTLR
 				// Note: once we add support for "JOIN ... ON ...",
 				// the ON clause needs to get included here
 				return CurrentClauseType == WHERE ||
-						CurrentClauseType == WITH ||
-						IsInCase;
+					   CurrentClauseType == WITH ||
+					   IsInCase;
 			}
 		}
 

@@ -16,10 +16,7 @@ namespace NHibernate.Test.MappingByCode.MixAutomapping
 		}
 		private class Entity
 		{
-			// Tested by reflection.
-#pragma warning disable CS0169 // The field 'ComponentsTests.Entity.id' is never used
 			private int id;
-#pragma warning restore CS0169 // The field 'ComponentsTests.Entity.id' is never used
 		}
 
 		private enum Something

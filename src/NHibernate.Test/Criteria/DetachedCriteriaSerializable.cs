@@ -357,12 +357,9 @@ namespace NHibernate.Test.Criteria
 				.Add(Expression.Lt("StudentNumber", 668L));
 			SerializeAndList(dc);
 
-			if (TestDialect.SupportsCountDistinct)
-			{
-				dc = DetachedCriteria.For(typeof(Enrolment))
-					.SetProjection(Projections.Count("StudentNumber").SetDistinct());
-				SerializeAndList(dc);
-			}
+			dc = DetachedCriteria.For(typeof(Enrolment))
+				.SetProjection(Projections.Count("StudentNumber").SetDistinct());
+			SerializeAndList(dc);
 
 			dc = DetachedCriteria.For(typeof(Enrolment))
 				.SetProjection(Projections.ProjectionList()

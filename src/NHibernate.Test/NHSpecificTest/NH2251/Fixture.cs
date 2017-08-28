@@ -110,9 +110,6 @@ namespace NHibernate.Test.NHSpecificTest.NH2251
 		[Test]
 		public void MultiplePagingParametersInSingleQuery()
 		{
-			if (!Dialect.SupportsSubSelectsWithPagingAsInPredicateRhs)
-				Assert.Ignore("Current dialect does not support paging within IN sub-queries");
-
 			using (var session = OpenSession())
 			using (var transaction = session.BeginTransaction())
 			{

@@ -60,9 +60,6 @@ namespace NHibernate.Test.Linq.ByMethod
 		[Test]
 		public void OrderByCalculatedAggregatedSubselectProperty()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore("Dialect does not support scalar sub-selects");
-
 			//NH-2781
 			var result = db.Orders
 				.Select(o => new
@@ -81,9 +78,6 @@ namespace NHibernate.Test.Linq.ByMethod
 		[Test]
 		public void AggregateAscendingOrderByClause()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore("Dialect does not support scalar sub-selects");
-
 			var query = from c in db.Customers
 						orderby c.Orders.Count
 						select c;
@@ -97,9 +91,6 @@ namespace NHibernate.Test.Linq.ByMethod
 		[Test]
 		public void AggregateDescendingOrderByClause()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore("Dialect does not support scalar sub-selects");
-
 			var query = from c in db.Customers
 						orderby c.Orders.Count descending
 						select c;
@@ -176,9 +167,6 @@ namespace NHibernate.Test.Linq.ByMethod
 		[Test]
 		public void OrderByWithSelfReferencedSubquery1()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore("Dialect does not support scalar sub-selects");
-
 			if (Dialect is Oracle8iDialect)
 				Assert.Ignore("On Oracle this generates a correlated subquery two levels deep which isn't supported until Oracle 10g.");
 
@@ -194,9 +182,6 @@ namespace NHibernate.Test.Linq.ByMethod
 		[Test]
 		public void OrderByWithSelfReferencedSubquery2()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore("Dialect does not support scalar sub-selects");
-
 			if (Dialect is Oracle8iDialect)
 				Assert.Ignore("On Oracle this generates a correlated subquery two levels deep which isn't supported until Oracle 10g.");
 

@@ -308,7 +308,7 @@ namespace NHibernate.SqlCommand
 			return "(".Equals(nextToken) ||
 			       Keywords.Contains(lcToken) ||
 			       functionRegistry.HasFunction(lcToken) ||
-			       dialect.IsKeyword(lcToken) ||
+			       dialect.Keywords.Contains(lcToken) ||
 				   dialect.IsKnownToken(lcToken, nextToken) ||
 			       FunctionKeywords.Contains(lcToken);
 		}

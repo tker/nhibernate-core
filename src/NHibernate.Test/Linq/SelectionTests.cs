@@ -283,9 +283,6 @@ namespace NHibernate.Test.Linq
 		[Test]
 		public void CanSelectWithAggregateSubQuery()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore(Dialect.GetType().Name + " does not support scalar sub-queries");
-
 			var timesheets = (from timesheet in db.Timesheets
 							  select new
 							  {
@@ -393,10 +390,7 @@ namespace NHibernate.Test.Linq
 		[Test]
 		public void CanSelectConditionalKnownTypes()
 		{
-			if (!Dialect.SupportsScalarSubSelects)
-				Assert.Ignore(Dialect.GetType().Name + " does not support scalar sub-queries");
-
-			var moreThanTwoOrderLinesBool = db.Orders.Select(o => new { Id = o.OrderId, HasMoreThanTwo = o.OrderLines.Count() > 2 ? true : false }).ToList();
+     		var moreThanTwoOrderLinesBool = db.Orders.Select(o => new { Id = o.OrderId, HasMoreThanTwo = o.OrderLines.Count() > 2 ? true : false }).ToList();
 			Assert.That(moreThanTwoOrderLinesBool.Count(x => x.HasMoreThanTwo == true), Is.EqualTo(410));
 
 			var moreThanTwoOrderLinesNBool = db.Orders.Select(o => new { Id = o.OrderId, HasMoreThanTwo = o.OrderLines.Count() > 2 ? true : (bool?)null }).ToList();

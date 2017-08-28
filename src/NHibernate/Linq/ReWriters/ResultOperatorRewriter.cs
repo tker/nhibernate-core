@@ -1,4 +1,3 @@
-using NHibernate.Linq.Visitors;
 using Remotion.Linq.Parsing;
 
 namespace NHibernate.Linq.ReWriters
@@ -20,7 +19,7 @@ namespace NHibernate.Linq.ReWriters
 	/// Removes various result operators from a query so that they can be processed at the same
 	/// tree level as the query itself.
 	/// </summary>
-	public class ResultOperatorRewriter : NhQueryModelVisitorBase
+	public class ResultOperatorRewriter : QueryModelVisitorBase
 	{
 		private readonly List<ResultOperatorBase> resultOperators = new List<ResultOperatorBase>();
 		private IStreamedDataInfo evaluationType;
@@ -60,14 +59,15 @@ namespace NHibernate.Linq.ReWriters
 		/// <summary>
 		/// Rewrites expressions so that they sit in the outermost portion of the query.
 		/// </summary>
-		private class ResultOperatorExpressionRewriter : RelinqExpressionVisitor
+		private class ResultOperatorExpressionRewriter : ExpressionTreeVisitor
 		{
 			private static readonly System.Type[] rewrittenTypes = new[]
 				{
 					typeof(FetchRequestBase),
 					typeof(OfTypeResultOperator),
+					typeof(CacheableResultOperator),
+					typeof(TimeoutResultOperator),
 					typeof(CastResultOperator), // see ProcessCast class
-					typeof(OptionsResultOperator)
 				};
 
 			private readonly List<ResultOperatorBase> resultOperators = new List<ResultOperatorBase>();
@@ -91,10 +91,10 @@ namespace NHibernate.Linq.ReWriters
 
 			public Expression Rewrite(Expression expression)
 			{
-				return Visit(expression);
+				return VisitExpression(expression);
 			}
 
-			protected override Expression VisitSubQuery(SubQueryExpression expression)
+			protected override Expression VisitSubQueryExpression(SubQueryExpression expression)
 			{
 				resultOperators.AddRange(
 					expression.QueryModel.ResultOperators
@@ -108,7 +108,7 @@ namespace NHibernate.Linq.ReWriters
 					return expression.QueryModel.MainFromClause.FromExpression;
 				}
 
-				return base.VisitSubQuery(expression);
+				return base.VisitSubQueryExpression(expression);
 			}
 		}
 	}

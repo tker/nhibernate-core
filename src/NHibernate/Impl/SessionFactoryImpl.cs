@@ -201,7 +201,7 @@ namespace NHibernate.Impl
 				}
 				if (settings.IsAutoQuoteEnabled)
 				{
-					SchemaMetadataUpdater.QuoteTableAndColumns(cfg, Dialect);
+					SchemaMetadataUpdater.QuoteTableAndColumns(cfg);
 				}
 			}
 			catch (NotSupportedException)

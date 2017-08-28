@@ -1,36 +1,30 @@
 using System.Linq.Expressions;
-using NHibernate.Linq.Visitors;
+using Remotion.Linq.Clauses.Expressions;
+using Remotion.Linq.Parsing;
 
 namespace NHibernate.Linq.Expressions
 {
 	/// <summary>
-	///     Represents an expression that has been nominated for direct inclusion in the SELECT clause.
-	///     This bypasses the standard nomination process and assumes that the expression can be converted
-	///     directly to SQL.
+	/// Represents an expression that has been nominated for direct inclusion in the SELECT clause.
+	/// This bypasses the standard nomination process and assumes that the expression can be converted 
+	/// directly to SQL.
 	/// </summary>
 	/// <remarks>
-	///     Used in the nomination of GroupBy key expressions to ensure that matching select clauses
-	///     are generated the same way.
+	/// Used in the nomination of GroupBy key expressions to ensure that matching select clauses
+	/// are generated the same way.
 	/// </remarks>
-	public class NhNominatedExpression : NhExpression
+	internal class NhNominatedExpression : ExtensionExpression
 	{
-		public NhNominatedExpression(Expression expression)
+		public Expression Expression { get; private set; }
+
+		public NhNominatedExpression(Expression expression) : base(expression.Type, (ExpressionType)NhExpressionType.Nominator)
 		{
 			Expression = expression;
 		}
 
-		public override System.Type Type => Expression.Type;
-
-		public Expression Expression { get; }
-
-		protected override Expression Accept(NhExpressionVisitor visitor)
+		protected override Expression VisitChildren(ExpressionTreeVisitor visitor)
 		{
-			return visitor.VisitNhNominated(this);
-		}
-
-		protected override Expression VisitChildren(ExpressionVisitor visitor)
-		{
-			var newExpression = visitor.Visit(Expression);
+			var newExpression = visitor.VisitExpression(Expression);
 
 			return newExpression != Expression
 				? new NhNominatedExpression(newExpression)

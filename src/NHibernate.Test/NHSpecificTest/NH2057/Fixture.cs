@@ -1,6 +1,9 @@
-using System.Threading;
+using System;
+using System.Collections.Generic;
 using System.Transactions;
+using NHibernate.Impl;
 using NUnit.Framework;
+using NHibernate.Criterion;
 
 namespace NHibernate.Test.NHSpecificTest.NH2057
 {
@@ -8,22 +11,21 @@ namespace NHibernate.Test.NHSpecificTest.NH2057
 	public class Fixture : BugTestCase
 	{
 		[Test]
+		[Description("This test fails intermittently on SQL Server ODBC. Not sure why.")]
 		public void WillCloseWhenUsingDTC()
 		{
-			ISession s;
+			SessionImpl s;
 			using (var tx = new TransactionScope())
 			{
-				using (s = OpenSession())
+				using (s = (SessionImpl)OpenSession())
 				{
 					s.Get<Person>(1);
 				}
 				//not closed because the tx is opened yet
-				Assert.That(s.IsOpen, Is.True);
+				Assert.False(s.IsClosed);
 				tx.Complete();
 			}
-			// ODBC does promote to distributed, causing the completion to happen concurrently to code
-			// following scope disposal. Sleep a bit for accounting for this.
-			Assert.That(() => s.IsOpen, Is.False.After(500, 100));
+			Assert.That(s.IsClosed, Is.True);
 		}
 	}
 }

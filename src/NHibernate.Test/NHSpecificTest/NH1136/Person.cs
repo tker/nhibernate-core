@@ -6,14 +6,10 @@ namespace NHibernate.Test.NHSpecificTest.NH1136
 	{
 		#region Fields
 
-		// Assigned by reflection
-#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
+#pragma warning disable 169
 		private int _id;
-#pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
-		// Used by reflection
-#pragma warning disable CS0169 // The field is never used
 		private int _version;
-#pragma warning restore CS0169 // The field is never used
+#pragma warning restore 169
 
 		private string _name;
 		private IMilestoneCollection<int, decimal> _feeMatrix = new MilestoneCollection<int, decimal>();

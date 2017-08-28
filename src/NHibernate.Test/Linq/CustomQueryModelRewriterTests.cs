@@ -40,16 +40,16 @@ namespace NHibernate.Test.Linq
 			}
 		}
 
-		public class CustomVisitor : NhQueryModelVisitorBase
+		public class CustomVisitor : QueryModelVisitorBase
 		{
 			public override void VisitWhereClause(WhereClause whereClause, QueryModel queryModel, int index)
 			{
-				whereClause.TransformExpressions(new Visitor().Visit);
+				whereClause.TransformExpressions(new Visitor().VisitExpression);
 			}
 
-			private class Visitor : RelinqExpressionVisitor
+			private class Visitor : ExpressionTreeVisitor
 			{
-				protected override Expression VisitBinary(BinaryExpression expression)
+				protected override Expression VisitBinaryExpression(BinaryExpression expression)
 				{
 					if (
 						expression.NodeType == ExpressionType.Equal ||
@@ -82,7 +82,7 @@ namespace NHibernate.Test.Linq
 						}
 					}
 
-					return base.VisitBinary(expression);
+					return base.VisitBinaryExpression(expression);
 				}
 			}
 		}

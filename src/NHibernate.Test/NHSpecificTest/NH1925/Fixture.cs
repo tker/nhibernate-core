@@ -6,11 +6,6 @@ namespace NHibernate.Test.NHSpecificTest.NH1925
 	[TestFixture]
 	public class Fixture : BugTestCase
 	{
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			return Dialect.SupportsScalarSubSelects;
-		}
-
 		private const string NAME_JOE = "Joe";
 		private const string NAME_ALLEN = "Allen";
 

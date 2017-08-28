@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using NHibernate.Dialect;
 using NHibernate.Linq;
 using NHibernate.DomainModel.Northwind.Entities;
 using NUnit.Framework;
@@ -50,9 +49,6 @@ namespace NHibernate.Test.Linq
         [Test(Description = "Predicated count on a child list")]
         public void PredicatedCountOnChildList()
         {
-            if (!Dialect.SupportsScalarSubSelects)
-                Assert.Ignore(Dialect.GetType().Name + " does not support scalar sub-queries");
-
             var results = (from c in db.Customers
                            select new
                                       {
@@ -75,14 +71,7 @@ namespace NHibernate.Test.Linq
                   c.Orders.Any(o => o.ShippedTo == c.CompanyName)
                   select c;
 
-			var count = results.Count();
-
-			Assert.That(count,
-				// Accent sensitive case
-				Is.EqualTo(85).
-				// Accent insensitive case (MySql has most of its case insensitive collations accent insensitive too)
-				// https://bugs.mysql.com/bug.php?id=19567
-				Or.EqualTo(87));
+            Assert.AreEqual(85, results.Count());
         }
 
         [Category("Paging")]
@@ -90,17 +79,16 @@ namespace NHibernate.Test.Linq
 							"the second, third and fourth pages of products")]
 		public void TriplePageSelection()
 		{
-			var q =
-				from p in db.Products
-				where p.ProductId > 1
-				orderby p.ProductId
-				select p;
+			IQueryable<Product> q = (
+			                        	from p in db.Products
+			                        	where p.ProductId > 1
+			                        	orderby p.ProductId
+			                        	select p
+			);
 
-			// ToList required otherwise the First call alters the paging and test something else than paging three pages,
-			// contrary o the test above description.
-			var page2 = q.Skip(5).Take(5).ToList();
-			var page3 = q.Skip(10).Take(5).ToList();
-			var page4 = q.Skip(15).Take(5).ToList();
+            IQueryable<Product> page2 = q.Skip(5).Take(5);
+            IQueryable<Product> page3 = q.Skip(10).Take(5);
+            IQueryable<Product> page4 = q.Skip(15).Take(5);
 
 			var firstResultOnPage2 = page2.First();
 			var firstResultOnPage3 = page3.First();
@@ -111,30 +99,7 @@ namespace NHibernate.Test.Linq
 			Assert.AreNotEqual(firstResultOnPage2.ProductId, firstResultOnPage4.ProductId);
 		}
 
-		[Category("Paging")]
-		[Test(Description = "NH-4061 - This sample uses a where clause and the Skip and Take operators to select " +
-			"the second, third and fourth pages of products, but then add a First causing the Take to be pointless.")]
-		public void TriplePageSelectionWithFirst()
-		{
-			if (Dialect is Oracle8iDialect)
-				Assert.Ignore("Not fixed: NH-4061 - Pointless Take calls screw Oracle dialect paging.");
-
-			var q =
-				from p in db.Products
-				where p.ProductId > 1
-				orderby p.ProductId
-				select p;
-
-			var firstResultOnPage2 = q.Skip(5).Take(5).First();
-			var firstResultOnPage3 = q.Skip(10).Take(5).First();
-			var firstResultOnPage4 = q.Skip(15).Take(5).First();
-
-			Assert.AreNotEqual(firstResultOnPage2.ProductId, firstResultOnPage3.ProductId);
-			Assert.AreNotEqual(firstResultOnPage3.ProductId, firstResultOnPage4.ProductId);
-			Assert.AreNotEqual(firstResultOnPage2.ProductId, firstResultOnPage4.ProductId);
-		}
-
-		[Test]
+        [Test]
         public void SelectFromObject()
         {
             using (var s = OpenSession())

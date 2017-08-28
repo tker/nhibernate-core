@@ -4,7 +4,7 @@ using Remotion.Linq.Parsing;
 
 namespace NHibernate.Linq.Visitors
 {
-	public class QueryExpressionSourceIdentifer : RelinqExpressionVisitor
+	public class QueryExpressionSourceIdentifer : ExpressionTreeVisitor
 	{
 		private readonly QuerySourceIdentifier _identifier;
 
@@ -13,10 +13,10 @@ namespace NHibernate.Linq.Visitors
 			_identifier = identifier;
 		}
 
-		protected override Expression VisitSubQuery(SubQueryExpression expression)
+		protected override Expression VisitSubQueryExpression(SubQueryExpression expression)
 		{
 			_identifier.VisitQueryModel(expression.QueryModel);
-			return base.VisitSubQuery(expression);
+			return base.VisitSubQueryExpression(expression);
 		}
 	}
 }

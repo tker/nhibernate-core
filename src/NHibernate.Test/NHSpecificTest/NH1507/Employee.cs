@@ -7,10 +7,7 @@ namespace NHibernate.Test.NHSpecificTest.NH1507
 	[Serializable]
 	public class Employee
 	{
-		// Used by reflection
-#pragma warning disable CS0169 // The field is never used
 		private int _id;
-#pragma warning restore CS0169 // The field is never used
 		private IList<Order> nativeOrders;
 
 		public virtual string LastName { get; set; }

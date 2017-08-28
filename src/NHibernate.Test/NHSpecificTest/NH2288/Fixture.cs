@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Text;
 using NHibernate.Cfg;
-using NHibernate.Dialect;
 using NHibernate.Tool.hbm2ddl;
 using NUnit.Framework;
 
@@ -12,8 +11,7 @@ namespace NHibernate.Test.NHSpecificTest.NH2288
 	{
 		private static void CheckDialect(Configuration configuration)
 		{
-			var dialect = Dialect.Dialect.GetDialect(configuration.Properties);
-			if (!(dialect is MsSql2000Dialect))
+			if (!configuration.Properties[Environment.Dialect].Contains("MsSql"))
 				Assert.Ignore("Specific test for MsSQL dialects");
 		}
 

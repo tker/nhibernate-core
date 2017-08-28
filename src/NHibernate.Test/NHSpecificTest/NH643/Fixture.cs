@@ -45,7 +45,7 @@ namespace NHibernate.Test.NHSpecificTest.NH643
 			using (ISession session = OpenSession())
 			using (ITransaction tx = session.BeginTransaction())
 			{
-				session.Delete(session.Get<Parent>(parentId));
+				session.Delete(session.Get(typeof(Parent), parentId));
 				tx.Commit();
 			}
 		}
@@ -55,7 +55,7 @@ namespace NHibernate.Test.NHSpecificTest.NH643
 			using (ISession session = OpenSession())
 			using (ITransaction tx = session.BeginTransaction())
 			{
-				var parent = session.Get<Parent>(parentId);
+				Parent parent = (Parent) session.Get(typeof(Parent), 1);
 				Child child = new Child();
 				parent.AddChild(child);
 				NHibernateUtil.Initialize(parent.Children);
@@ -67,7 +67,7 @@ namespace NHibernate.Test.NHSpecificTest.NH643
 		{
 			using (ISession session = OpenSession())
 			{
-				var parent = session.Get<Parent>(parentId);
+				Parent parent = (Parent) session.Get(typeof(Parent), 1);
 				Assert.AreEqual(count, parent.Children.Count);
 			}
 		}

@@ -8,10 +8,7 @@ namespace NHibernate.Test.MappingByCode.TypeExtensionsTests
 	{
 		private class MyClass
 		{
-			// Used by reflection
-#pragma warning disable CS0169 // The field is never used
 			private int pField;
-#pragma warning restore CS0169 // The field is never used
 			private int PrivateProperty { get; set; }
 			private int AnotherPrivateProperty { get; set; }
 			protected int ProtectedProperty { get; set; }
@@ -20,10 +17,7 @@ namespace NHibernate.Test.MappingByCode.TypeExtensionsTests
 
 		private class Inherited: MyClass
 		{
-			// Used by reflection
-#pragma warning disable CS0169 // The field is never used
 			private int pField;
-#pragma warning restore CS0169 // The field is never used
 			private int PrivateProperty { get; set; }
 		}
 

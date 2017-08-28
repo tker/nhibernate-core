@@ -29,7 +29,6 @@ namespace NHibernate.Linq
 		private HqlHaving _hqlHaving;
 		private HqlTreeNode _root;
 		private HqlOrderBy _orderBy;
-		private HqlInsert _insertRoot;
 
 		public bool IsRoot
 		{
@@ -43,18 +42,12 @@ namespace NHibernate.Linq
 		{
 			get
 			{
-				//Strange side effects in a property getter...
-				AddPendingHqlClausesToRoot();
+				ExecuteAddHavingClause(_hqlHaving);
+				ExecuteAddOrderBy(_orderBy);
+				ExecuteAddSkipClause(_skipCount);
+				ExecuteAddTakeClause(_takeCount);
 				return _root;
 			}
-		}
-
-		private void AddPendingHqlClausesToRoot()
-		{
-			ExecuteAddHavingClause(_hqlHaving);
-			ExecuteAddOrderBy(_orderBy);
-			ExecuteAddSkipClause(_skipCount);
-			ExecuteAddTakeClause(_takeCount);
 		}
 
 		/// <summary>
@@ -65,38 +58,16 @@ namespace NHibernate.Linq
 
 		public HqlTreeBuilder TreeBuilder { get; }
 
-		public IntermediateHqlTree(bool root, QueryMode mode)
+		public IntermediateHqlTree(bool root)
 		{
 			_isRoot = root;
 			TreeBuilder = new HqlTreeBuilder();
-			if (mode == QueryMode.Delete)
-			{
-				_root = TreeBuilder.Delete(TreeBuilder.From());
-			}
-			else if (mode == QueryMode.Update)
-			{
-				_root = TreeBuilder.Update(TreeBuilder.From(), TreeBuilder.Set());
-			}
-			else if (mode == QueryMode.UpdateVersioned)
-			{
-				_root = TreeBuilder.Update(TreeBuilder.Versioned(), TreeBuilder.From(), TreeBuilder.Set());
-			}
-			else if (mode == QueryMode.Insert)
-			{
-				_root = TreeBuilder.Query(TreeBuilder.SelectFrom(TreeBuilder.From()));
-				_insertRoot = TreeBuilder.Insert(TreeBuilder.Into(), _root as HqlQuery);
-			}
-			else
-			{
-				_root = TreeBuilder.Query(TreeBuilder.SelectFrom(TreeBuilder.From()));
-			}
+			_root = TreeBuilder.Query(TreeBuilder.SelectFrom(TreeBuilder.From()));
 		}
 
 		public ExpressionToHqlTranslationResults GetTranslation()
 		{
-			AddPendingHqlClausesToRoot();
-			var translationRoot = _insertRoot ?? _root;
-			return new ExpressionToHqlTranslationResults(translationRoot,
+			return new ExpressionToHqlTranslationResults(Root,
 				_itemTransformers,
 				_listTransformers,
 				_postExecuteTransformers,
@@ -131,16 +102,9 @@ namespace NHibernate.Linq
 			_root.NodesPreOrder.OfType<HqlSelectFrom>().First().AddChild(select);
 		}
 
-		public void AddInsertClause(HqlIdent target, HqlRange columnSpec)
-		{
-			var into = _insertRoot.NodesPreOrder.OfType<HqlInto>().Single();
-			into.AddChild(target);
-			into.AddChild(columnSpec);
-		}
-
 		public void AddGroupByClause(HqlGroupBy groupBy)
 		{
-			_root.AddChild(groupBy);
+			this._root.AddChild(groupBy);
 		}
 
 		public void AddOrderByClause(HqlExpression orderBy, HqlDirectionStatement direction)
@@ -240,24 +204,10 @@ namespace NHibernate.Linq
 			}
 			else
 			{
-				var currentClause = (HqlBooleanExpression)_hqlHaving.Children.Single();
+				var currentClause = (HqlBooleanExpression) _hqlHaving.Children.Single();
 
 				_hqlHaving.ClearChildren();
 				_hqlHaving.AddChild(TreeBuilder.BooleanAnd(currentClause, where));
-			}
-		}
-
-		public void AddSet(HqlEquality equality)
-		{
-			var currentSet = _root.NodesPreOrder.OfType<HqlSet>().FirstOrDefault();
-			if (currentSet == null)
-			{
-				currentSet = TreeBuilder.Set(equality);
-				_root.AddChild(currentSet);
-			}
-			else
-			{
-				currentSet.AddChild(equality);
 			}
 		}
 

@@ -1,5 +1,5 @@
 using System.Linq;
-using System.Linq.Dynamic.Core;
+using System.Linq.Dynamic;
 using NHibernate.Linq;
 using NUnit.Framework;
 
@@ -20,15 +20,16 @@ namespace NHibernate.Test.Linq
 		}
 
 		[Test(Description = "NH-3239")]
-		public void CanCacheDynamicLinq()
+		public void CanCahceDynamicLinq()
 		{
 			//dynamic orderby clause
 			var users = db.Users
-				.SetOptions(o => o.SetCacheable(true))
-				.Fetch(x => x.Role)
-				.OrderBy("RegisteredAt");
+						  .Cacheable()
+						  .Fetch(x => x.Role)
+						  .OrderBy("RegisteredAt");
 
-			users.ToList();
+			users
+			  .ToList();
 
 			using (var log = new SqlLogSpy())
 			{
