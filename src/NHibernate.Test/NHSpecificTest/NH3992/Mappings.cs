@@ -9,7 +9,7 @@ namespace NHibernate.Test.NHSpecificTest.NH3992
 		{
 			Id(i => i.Id, m => m.Generator(Generators.GuidComb));
 			Property(p => p.BaseField,
-				map => { map.Column("BaseField"); });
+			         map => { map.Column("BaseField"); });
 		}
 	}
 
@@ -19,9 +19,9 @@ namespace NHibernate.Test.NHSpecificTest.NH3992
 		{
 			Extends(typeof(BaseEntity));
 			Property(p => p.ExtendedField,
-				map => { map.Column("ExtendedField"); });
+			         map => { map.Column("ExtendedField"); });
 			Property(p => p.TopLevelField,
-				map => { map.Column("TopLevelField"); });
+			         map => { map.Column("TopLevelField"); });
 		}
 	}
 
@@ -31,9 +31,9 @@ namespace NHibernate.Test.NHSpecificTest.NH3992
 		{
 			Extends(typeof(BaseEntity));
 			Property(p => p.ExtendedField,
-				map => { map.Column("ExtendedField"); });
+			         map => { map.Column("ExtendedField"); });
 			Property(p => p.TopLevelField,
-				map => { map.Column("TopLevelField"); });
+			         map => { map.Column("TopLevelField"); });
 		}
 	}
 
@@ -43,9 +43,55 @@ namespace NHibernate.Test.NHSpecificTest.NH3992
 		{
 			Extends(typeof(BaseEntity));
 			Property(p => p.ExtendedField,
-				map => { map.Column("ExtendedField"); });
+			         map => { map.Column("ExtendedField"); });
 			Property(p => p.TopLevelField,
-				map => { map.Column("TopLevelField"); });
+			         map => { map.Column("TopLevelField"); });
+		}
+	}
+
+	public class BaseInterfaceMapping : ClassMapping<IBaseInterface>
+	{
+		public BaseInterfaceMapping()
+		{
+			Id(i => i.Id, m => m.Generator(Generators.GuidComb));
+			Property(p => p.BaseField,
+			         map => { map.Column("BaseField"); });
+		}
+	}
+
+	public class MappedEntityFromInterfaceJoinedSubclassMapping : JoinedSubclassMapping<MappedEntityFromInterface>
+	{
+		public MappedEntityFromInterfaceJoinedSubclassMapping()
+		{
+			Extends(typeof(IBaseInterface));
+			Property(p => p.ExtendedField,
+			         map => { map.Column("ExtendedField"); });
+			Property(p => p.TopLevelField,
+			         map => { map.Column("TopLevelField"); });
+		}
+	}
+
+	public class MappedEntityFromInterfaceUnionSubclassMapping : UnionSubclassMapping<MappedEntityFromInterface>
+	{
+		public MappedEntityFromInterfaceUnionSubclassMapping()
+		{
+			Extends(typeof(IBaseInterface));
+			Property(p => p.ExtendedField,
+			         map => { map.Column("ExtendedField"); });
+			Property(p => p.TopLevelField,
+			         map => { map.Column("TopLevelField"); });
+		}
+	}
+
+	public class MappedEntityFromInterfaceSubclassMapping : SubclassMapping<MappedEntityFromInterface>
+	{
+		public MappedEntityFromInterfaceSubclassMapping()
+		{
+			Extends(typeof(IBaseInterface));
+			Property(p => p.ExtendedField,
+			         map => { map.Column("ExtendedField"); });
+			Property(p => p.TopLevelField,
+			         map => { map.Column("TopLevelField"); });
 		}
 	}
 }

@@ -35,11 +35,6 @@ namespace NHibernate.Mapping.ByCode
 				       || HasDelayedEntityRegistration(type);
 			}
 
-			public bool IsDeclaredEntity(System.Type type)
-			{
-				return RootEntities.Contains(type) || HasDelayedEntityRegistration(type);
-			}
-
 			public bool IsTablePerClass(System.Type type)
 			{
 				ExecuteDelayedTypeRegistration(type);
@@ -685,12 +680,6 @@ namespace NHibernate.Mapping.ByCode
 		bool IModelInspector.IsEntity(System.Type type)
 		{
 			bool declaredResult = declaredModel.IsEntity(type);
-			return isEntity(type, declaredResult);
-		}
-
-		bool IModelInspector.IsDeclaredEntity(System.Type type)
-		{
-			bool declaredResult = declaredModel.IsDeclaredEntity(type);
 			return isEntity(type, declaredResult);
 		}
 

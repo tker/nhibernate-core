@@ -643,7 +643,7 @@ namespace NHibernate.Mapping.ByCode
 			var classMapper = new UnionSubclassMapper(type, mapping);
 
 			IEnumerable<MemberInfo> candidateProperties = null;
-			if (!modelInspector.IsDeclaredEntity(type.BaseType))
+			if (!modelInspector.IsRootEntity(type.BaseType))
 			{
 				System.Type baseType = GetEntityBaseType(type);
 				if (baseType != null)
@@ -667,7 +667,7 @@ namespace NHibernate.Mapping.ByCode
 		{
 			var classMapper = new SubclassMapper(type, mapping);
 			IEnumerable<MemberInfo> candidateProperties = null;
-			if (!modelInspector.IsDeclaredEntity(type.BaseType))
+			if (!modelInspector.IsRootEntity(type.BaseType))
 			{
 				System.Type baseType = GetEntityBaseType(type);
 				if (baseType != null)
@@ -709,7 +709,7 @@ namespace NHibernate.Mapping.ByCode
 		{
 			var classMapper = new JoinedSubclassMapper(type, mapping);
 			IEnumerable<MemberInfo> candidateProperties = null;
-			if (!modelInspector.IsDeclaredEntity(type.BaseType))
+			if (!modelInspector.IsRootEntity(type.BaseType))
 			{
 				System.Type baseType = GetEntityBaseType(type);
 				if (baseType != null)
@@ -736,12 +736,12 @@ namespace NHibernate.Mapping.ByCode
 			while (analyzingType != null && analyzingType != typeof (object))
 			{
 				analyzingType = analyzingType.BaseType;
-				if (modelInspector.IsDeclaredEntity(analyzingType))
+				if (modelInspector.IsRootEntity(analyzingType))
 				{
 					return analyzingType;
 				}
 			}
-			return type.GetInterfaces().FirstOrDefault(i => modelInspector.IsEntity(i));
+			return type.GetInterfaces().FirstOrDefault(i => modelInspector.IsRootEntity(i));
 		}
 
 		private void MapRootClass(System.Type type, HbmMapping mapping)
