@@ -6,6 +6,12 @@ namespace NHibernate.Test.NHSpecificTest.NH2056
 {
 	public class Fixture:BugTestCase
 	{
+		protected override bool AppliesTo(Dialect.Dialect dialect)
+		{
+			// DML Update on multi-tables entity requires temp table.
+			return Dialect.SupportsTemporaryTables;
+		}
+
 		protected override void OnTearDown()
 		{
 			using (var s = OpenSession())
@@ -20,7 +26,7 @@ namespace NHibernate.Test.NHSpecificTest.NH2056
 		public void CanUpdateInheritedClass()
 		{
 			object savedId;
-			using (var session = sessions.OpenSession())
+			using (var session = Sfi.OpenSession())
 			using (var t = session.BeginTransaction())
 			{
 				IDictionary address = new Dictionary<string, object>();
@@ -32,7 +38,7 @@ namespace NHibernate.Test.NHSpecificTest.NH2056
 				t.Commit();
 			}
 
-			using (var session = sessions.OpenSession())
+			using (var session = Sfi.OpenSession())
 			using (var t = session.BeginTransaction())
 			{
 				var query = session.CreateQuery("Update Address address set address.AddressF1 = :val1, address.AddressF2 = :val2 where ID=:theID");
@@ -46,7 +52,7 @@ namespace NHibernate.Test.NHSpecificTest.NH2056
 
 				t.Commit();
 			}
-			using (var session = sessions.OpenSession())
+			using (var session = Sfi.OpenSession())
 			using (var t = session.BeginTransaction())
 			{
 				var updated = (IDictionary) session.Get("Address", savedId);

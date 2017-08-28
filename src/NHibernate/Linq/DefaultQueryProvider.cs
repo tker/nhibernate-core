@@ -13,8 +13,10 @@ namespace NHibernate.Linq
 {
 	public interface INhQueryProvider : IQueryProvider
 	{
-		object ExecuteFuture(Expression expression);
+		IEnumerable<TResult> ExecuteFuture<TResult>(Expression expression);
+		IFutureValue<TResult> ExecuteFutureValue<TResult>(Expression expression);
 		void SetResultTransformerAndAdditionalCriteria(IQuery query, NhLinqExpression nhExpression, IDictionary<string, Tuple<object, IType>> parameters);
+		int ExecuteDml<T>(QueryMode queryMode, Expression expression);
 	}
 
 	public class DefaultQueryProvider : INhQueryProvider
@@ -44,14 +46,14 @@ namespace NHibernate.Linq
 
 		public TResult Execute<TResult>(Expression expression)
 		{
-			return (TResult) Execute(expression);
+			return (TResult)Execute(expression);
 		}
 
 		public virtual IQueryable CreateQuery(Expression expression)
 		{
 			MethodInfo m = CreateQueryMethodDefinition.MakeGenericMethod(expression.Type.GetGenericArguments()[0]);
 
-			return (IQueryable) m.Invoke(this, new object[] {expression});
+			return (IQueryable)m.Invoke(this, new object[] { expression });
 		}
 
 		public virtual IQueryable<T> CreateQuery<T>(Expression expression)
@@ -59,12 +61,32 @@ namespace NHibernate.Linq
 			return new NhQueryable<T>(this, expression);
 		}
 
-		public virtual object ExecuteFuture(Expression expression)
+		public virtual IEnumerable<TResult> ExecuteFuture<TResult>(Expression expression)
 		{
-			IQuery query;
-			NhLinqExpression nhQuery;
-			NhLinqExpression nhLinqExpression = PrepareQuery(expression, out query, out nhQuery);
-			return ExecuteFutureQuery(nhLinqExpression, query, nhQuery);
+			PrepareQuery(expression, out var query, out var nhQuery);
+
+			var result = query.Future<TResult>();
+			SetupFutureResult(nhQuery, (IDelayedValue)result);
+
+			return result;
+		}
+
+		public virtual IFutureValue<TResult> ExecuteFutureValue<TResult>(Expression expression)
+		{
+			PrepareQuery(expression, out var query, out var nhQuery);
+
+			var result = query.FutureValue<TResult>();
+			SetupFutureResult(nhQuery, (IDelayedValue)result);
+
+			return result;
+		}
+
+		private static void SetupFutureResult(NhLinqExpression nhQuery, IDelayedValue result)
+		{
+			if (nhQuery.ExpressionToHqlTranslationResults.PostExecuteTransformer == null)
+				return;
+
+			result.ExecuteOnEval = nhQuery.ExpressionToHqlTranslationResults.PostExecuteTransformer;
 		}
 
 		protected virtual NhLinqExpression PrepareQuery(Expression expression, out IQuery query, out NhLinqExpression nhQuery)
@@ -73,29 +95,11 @@ namespace NHibernate.Linq
 
 			query = Session.CreateQuery(nhLinqExpression);
 
-			nhQuery = (NhLinqExpression) ((ExpressionQueryImpl) query).QueryExpression;
+			nhQuery = (NhLinqExpression)((ExpressionQueryImpl)query).QueryExpression;
 
 			SetParameters(query, nhLinqExpression.ParameterValuesByName);
 			SetResultTransformerAndAdditionalCriteria(query, nhQuery, nhLinqExpression.ParameterValuesByName);
 			return nhLinqExpression;
-		}
-
-		private static readonly MethodInfo Future = ReflectHelper.GetMethodDefinition<IQuery>(q => q.Future<object>());
-		private static readonly MethodInfo FutureValue = ReflectHelper.GetMethodDefinition<IQuery>(q => q.FutureValue<object>());
-
-		protected virtual object ExecuteFutureQuery(NhLinqExpression nhLinqExpression, IQuery query, NhLinqExpression nhQuery)
-		{
-			var method = (nhLinqExpression.ReturnType == NhLinqExpressionReturnType.Sequence ? Future : FutureValue)
-				.MakeGenericMethod(nhQuery.Type);
-
-			object result = method.Invoke(query, new object[0]);
-
-			if (nhQuery.ExpressionToHqlTranslationResults.PostExecuteTransformer != null)
-			{
-				((IDelayedValue) result).ExecuteOnEval = nhQuery.ExpressionToHqlTranslationResults.PostExecuteTransformer;
-			}
-
-			return result;
 		}
 
 		protected virtual object ExecuteQuery(NhLinqExpression nhLinqExpression, IQuery query, NhLinqExpression nhQuery)
@@ -166,6 +170,17 @@ namespace NHibernate.Linq
 			{
 				criteria(query, parameters);
 			}
+		}
+
+		public int ExecuteDml<T>(QueryMode queryMode, Expression expression)
+		{
+			var nhLinqExpression = new NhLinqDmlExpression<T>(queryMode, expression, Session.Factory);
+
+			var query = Session.CreateQuery(nhLinqExpression);
+
+			SetParameters(query, nhLinqExpression.ParameterValuesByName);
+
+			return query.ExecuteUpdate();
 		}
 	}
 }

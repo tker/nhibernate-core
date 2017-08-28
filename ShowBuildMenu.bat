@@ -9,9 +9,6 @@ set NUNIT="%~dp0Tools\NUnit.ConsoleRunner.3.6.0\tools\nunit3-console.exe"
 
 :main-menu
 echo ========================= NHIBERNATE BUILD MENU ==========================
-echo --- SETUP ---
-echo A. Set up for Visual Studio (creates AssemblyInfo.cs files).
-echo.
 echo --- TESTING ---
 echo B. (Step 1) Set up a new test configuration for a particular database.
 echo C. (Step 2) Activate a test configuration.
@@ -29,16 +26,15 @@ echo --- Exit ---
 echo X. Make the beautiful build menu go away.
 echo.
 
-%BUILDTOOL% prompt ABCDEFGIX
-if errorlevel 8 goto end
-if errorlevel 7 goto teamcity-menu
-if errorlevel 6 goto build-release-package
-if errorlevel 5 goto build-release
-if errorlevel 4 goto build-debug
-if errorlevel 3 goto test-run
-if errorlevel 2 goto test-activate
-if errorlevel 1 goto test-setup-menu
-if errorlevel 0 goto build-visual-studio
+%BUILDTOOL% prompt BCDEFGIX
+if errorlevel 7 goto end
+if errorlevel 6 goto teamcity-menu
+if errorlevel 5 goto build-release-package
+if errorlevel 4 goto build-release
+if errorlevel 3 goto build-debug
+if errorlevel 2 goto test-run
+if errorlevel 1 goto test-activate
+if errorlevel 0 goto test-setup-menu
 
 :test-setup-menu
 echo A. Add a test configuration for SQL Server.
@@ -50,12 +46,14 @@ echo F. Add a test configuration for PostgreSQL.
 echo G. Add a test configuration for Oracle.
 echo H. Add a test configuration for SQL Server Compact (x86).
 echo I. Add a test configuration for SQL Server Compact (x64).
+echo J. Add a test configuration for MySql.
 echo.
 echo X.  Exit to main menu.
 echo.
 
-%BUILDTOOL% prompt ABCDEFGHIX
-if errorlevel 9 goto main-menu
+%BUILDTOOL% prompt ABCDEFGHIJX
+if errorlevel 10 goto main-menu
+if errorlevel 9 goto test-setup-mysql
 if errorlevel 8 goto test-setup-sqlservercex64
 if errorlevel 7 goto test-setup-sqlservercex86
 if errorlevel 6 goto test-setup-oracle
@@ -91,14 +89,12 @@ goto test-setup-generic
 set CONFIG_NAME=FireBird
 set PLATFORM=x86
 set LIB_FILES=lib\teamcity\firebird\*.dll
-set LIB_FILES2=lib\teamcity\firebird\x86\*
 goto test-setup-generic
 
 :test-setup-firebirdx64
 set CONFIG_NAME=FireBird
 set PLATFORM=x64
 set LIB_FILES=lib\teamcity\firebird\*.dll
-set LIB_FILES2=lib\teamcity\firebird\x64\*
 goto test-setup-generic
 
 :test-setup-sqlitex86
@@ -122,6 +118,13 @@ set LIB_FILES=lib\teamcity\postgresql\*.dll
 set LIB_FILES2=
 goto test-setup-generic
 
+:test-setup-mysql
+set CONFIG_NAME=MySql
+set PLATFORM=AnyCPU
+set LIB_FILES=lib\teamcity\mysql\*.dll
+set LIB_FILES2=
+goto test-setup-generic
+
 :test-setup-oracle
 set CONFIG_NAME=Oracle
 set PLATFORM=x86
@@ -130,6 +133,7 @@ set LIB_FILES2=
 goto test-setup-generic
 
 :test-setup-generic
+set CFGNAME=
 set /p CFGNAME=Enter a name for your test configuration or press enter to use default name: 
 if /I "%CFGNAME%"=="" set CFGNAME=%CONFIG_NAME%-%PLATFORM%
 mkdir "%AVAILABLE_CONFIGURATIONS%\%CFGNAME%"
@@ -163,10 +167,6 @@ goto main-menu
 rem :build-test
 rem %NANT% test
 rem goto main-menu
-
-:build-visual-studio
-%NANT% visual-studio
-goto main-menu
 
 :build-debug
 %NANT% clean build

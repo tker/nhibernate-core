@@ -324,7 +324,7 @@ namespace NHibernate.Test.MappingByCode.MappersTests
 	{
 		#region Implementation of IUserType
 
-		public bool Equals(object x, object y)
+		public new bool Equals(object x, object y)
 		{
 			throw new NotImplementedException();
 		}
@@ -334,12 +334,12 @@ namespace NHibernate.Test.MappingByCode.MappersTests
 			throw new NotImplementedException();
 		}
 
-		public object NullSafeGet(DbDataReader rs, string[] names, object owner)
+		public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void NullSafeSet(DbCommand cmd, object value, int index)
+		public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
 		{
 			throw new NotImplementedException();
 		}
@@ -394,7 +394,7 @@ namespace NHibernate.Test.MappingByCode.MappersTests
 			throw new NotImplementedException();
 		}
 
-		public bool Equals(object x, object y)
+		public new bool Equals(object x, object y)
 		{
 			throw new NotImplementedException();
 		}

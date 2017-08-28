@@ -16,7 +16,6 @@ using NHibernate.Hql;
 using NHibernate.Id;
 using NHibernate.Loader.Criteria;
 using NHibernate.Loader.Custom;
-using NHibernate.Loader.Custom.Sql;
 using NHibernate.Persister.Entity;
 using NHibernate.Proxy;
 using NHibernate.Type;
@@ -28,19 +27,21 @@ namespace NHibernate.Impl
 	public class StatelessSessionImpl : AbstractSessionImpl, IStatelessSession
 	{
 		private static readonly IInternalLogger log = LoggerProvider.LoggerFor(typeof(StatelessSessionImpl));
+
 		[NonSerialized]
 		private readonly ConnectionManager connectionManager;
+
 		[NonSerialized]
 		private readonly StatefulPersistenceContext temporaryPersistenceContext;
 
-		internal StatelessSessionImpl(DbConnection connection, SessionFactoryImpl factory)
-			: base(factory)
+		internal StatelessSessionImpl(SessionFactoryImpl factory, ISessionCreationOptions options)
+			: base(factory, options)
 		{
 			using (new SessionIdLoggingContext(SessionId))
 			{
 				temporaryPersistenceContext = new StatefulPersistenceContext(this);
-				connectionManager = new ConnectionManager(this, connection, ConnectionReleaseMode.AfterTransaction,
-														  new EmptyInterceptor());
+				connectionManager = new ConnectionManager(this, options.UserSuppliedConnection, ConnectionReleaseMode.AfterTransaction,
+					EmptyInterceptor.Instance);
 
 				if (log.IsDebugEnabled)
 				{
@@ -180,7 +181,7 @@ namespace NHibernate.Impl
 				temporaryPersistenceContext.Clear();
 			}
 		}
-		
+
 		public override IEnumerable Enumerable(IQueryExpression queryExpression, QueryParameters queryParameters)
 		{
 			throw new NotImplementedException();
@@ -217,14 +218,20 @@ namespace NHibernate.Impl
 
 		public override void BeforeTransactionCompletion(ITransaction tx)
 		{
+			FlushBeforeTransactionCompletion();
+		}
+
+		public override void FlushBeforeTransactionCompletion()
+		{
+			using (new SessionIdLoggingContext(SessionId))
+			{
+				if (FlushMode != FlushMode.Manual)
+					Flush();
+			}
 		}
 
 		public override void AfterTransactionCompletion(bool successful, ITransaction tx)
 		{
-			using (new SessionIdLoggingContext(SessionId))
-			{
-				connectionManager.AfterTransaction();
-			}
 		}
 
 		public override object GetContextEntityIdentifier(object obj)
@@ -291,7 +298,7 @@ namespace NHibernate.Impl
 
 		public override IInterceptor Interceptor
 		{
-			get { return new EmptyInterceptor(); }
+			get { return EmptyInterceptor.Instance; }
 		}
 
 		public override EventListeners Listeners
@@ -839,6 +846,7 @@ namespace NHibernate.Impl
 		#endregion
 
 		#region IDisposable Members
+
 		private bool _isAlreadyDisposed;
 
 		/// <summary>
