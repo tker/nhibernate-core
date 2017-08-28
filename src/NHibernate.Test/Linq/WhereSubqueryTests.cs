@@ -475,21 +475,6 @@ where c.Order.Customer.CustomerId = 'VINET'
 			Assert.That(query.Count, Is.EqualTo(61));
 		}
 
-		[Test]
-		public void OrdersWithSubqueryWithAnyAndContains()
-		{
-			var subquery = from line in db.OrderLines
-			               join product in db.Products
-			               on line.Product.ProductId equals product.ProductId
-			               where line.Quantity == 5
-			               select line.Order;
-
-			var order = db.Orders.First(o => o.OrderLines.Any(l => l.Quantity == 5));
-
-			var x = subquery.Contains(order);
-			Assert.That(x, Is.True);
-		}
-
 		[Test(Description = "NH-2899")]
 		public void ProductsWithSubquery()
 		{
