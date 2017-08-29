@@ -31,8 +31,7 @@ namespace NHibernate.Mapping.ByCode
 
 			public bool IsEntity(System.Type type)
 			{
-				return RootEntities.Contains(type) || type.GetBaseTypes().Any(t => RootEntities.Contains(t))
-				       || HasDelayedEntityRegistration(type);
+				return RootEntities.Contains(type) || type.GetBaseTypes().Any(t => RootEntities.Contains(t)) || HasDelayedEntityRegistration(type);
 			}
 
 			public bool IsDeclaredEntity(System.Type type)
