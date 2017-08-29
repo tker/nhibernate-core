@@ -37,4 +37,20 @@ namespace NHibernate.Test.NHSpecificTest.NH3992
 		public virtual string TopLevelField { get; set; }
 	}
 
+	// Animal entities copied from NH2691
+	public abstract class Animal
+	{
+		public virtual int Id { get; set; }
+		public virtual string Description { get; set; }
+		public virtual int Sequence { get; set; }
+	}
+
+	public abstract class Mammal : Animal
+	{
+		public virtual bool Pregnant { get; set; }
+		public virtual DateTime? BirthDate { get; set; }
+	}
+
+	public class Dog : Mammal { }
+
 }

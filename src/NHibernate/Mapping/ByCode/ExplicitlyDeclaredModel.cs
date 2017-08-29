@@ -24,6 +24,12 @@ namespace NHibernate.Mapping.ByCode
 			       || HasDelayedEntityRegistration(type);
 		}
 
+		public virtual bool IsDeclaredEntity(System.Type type)
+		{
+			return RootEntities.Contains(type) || HasDelayedEntityRegistration(type);
+		}
+
+
 		public virtual bool IsTablePerClass(System.Type type)
 		{
 			ExecuteDelayedTypeRegistration(type);
