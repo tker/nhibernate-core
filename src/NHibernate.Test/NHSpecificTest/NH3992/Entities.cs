@@ -53,4 +53,85 @@ namespace NHibernate.Test.NHSpecificTest.NH3992
 
 	public class Dog : Mammal { }
 
+	// Mapped -> Unmapped -> Mapped -> Root
+	namespace Longchain1
+	{
+		public class MappedRoot
+		{
+			public virtual Guid Id { get; set; }
+			public virtual string BaseField { get; set; }
+		}
+
+		public class MappedExtension : MappedRoot
+		{
+			public virtual string MappedExtensionField { get; set; }
+		}
+
+		public class UnmappedExtension : MappedExtension
+		{
+			public virtual string UnmappedExtensionField { get; set; }
+		}
+
+		public class TopLevel : UnmappedExtension
+		{
+			public virtual string TopLevelExtensionField { get; set; }
+		}
+	}
+
+	// Mapped -> Mapped -> Unmapped -> Root
+	namespace Longchain2
+	{
+		public class MappedRoot
+		{
+			public virtual Guid Id { get; set; }
+			public virtual string BaseField { get; set; }
+		}
+
+		public class UnmappedExtension : MappedRoot
+		{
+			public virtual string UnmappedExtensionField { get; set; }
+		}
+
+		public class MappedExtension : UnmappedExtension
+		{
+			public virtual string MappedExtensionField { get; set; }
+		}
+
+
+		public class TopLevel : MappedExtension
+		{
+			public virtual string TopLevelExtensionField { get; set; }
+		}
+	}
+
+	// Mapped -> Unmapped -> Mapped -> Unmapped -> Root
+	namespace Longchain3
+	{
+		public class MappedRoot
+		{
+			public virtual Guid Id { get; set; }
+			public virtual string BaseField { get; set; }
+		}
+
+		public class FirstUnmappedExtension : MappedRoot
+		{
+			public virtual string FirstUnmappedExtensionField { get; set; }
+		}
+
+		public class MappedExtension : FirstUnmappedExtension
+		{
+			public virtual string MappedExtensionField { get; set; }
+		}
+
+		public class SecondUnmappedExtension : MappedExtension
+		{
+			public virtual string SecondUnmappedExtensionField { get; set; }
+		}
+
+		public class TopLevel : SecondUnmappedExtension
+		{
+			public virtual string TopLevelExtensionField { get; set; }
+		}
+	}
+
 }

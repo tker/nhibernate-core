@@ -15,6 +15,11 @@ namespace NHibernate.Mapping.ByCode
 
 		protected virtual void AppendDefaultEvents()
 		{
+			AfterMapClass += AddClassDeclaration;
+			AfterMapSubclass += AddSubclassDeclaration;
+			AfterMapJoinedSubclass += AddJoinedSubclassDeclaration;
+			AfterMapUnionSubclass += AddUnionSubclassDeclaration;
+
 			BeforeMapClass += NoPoidGuid;
 			BeforeMapClass += NoSetterPoidToField;
 
@@ -55,6 +60,26 @@ namespace NHibernate.Mapping.ByCode
 			BeforeMapManyToOne += MemberReadOnlyAccessor;
 			BeforeMapOneToOne += MemberReadOnlyAccessor;
 			BeforeMapAny += MemberReadOnlyAccessor;
+		}
+
+		private void AddClassDeclaration(IModelInspector modelinspector, System.Type type, IClassAttributesMapper classcustomizer)
+		{
+			((IModelExplicitDeclarationsHolder)SimpleModelInspector).AddAsRootEntity(type);
+		}
+
+		private void AddSubclassDeclaration(IModelInspector modelinspector, System.Type type, ISubclassAttributesMapper subclassCustomizer)
+		{
+			((IModelExplicitDeclarationsHolder)SimpleModelInspector).AddAsTablePerClassEntity(type);
+		}
+
+		private void AddJoinedSubclassDeclaration(IModelInspector modelinspector, System.Type type, IJoinedSubclassAttributesMapper joinedSubclassCustomizer)
+		{
+			((IModelExplicitDeclarationsHolder)SimpleModelInspector).AddAsTablePerClassHierarchyEntity(type);
+		}
+
+		private void AddUnionSubclassDeclaration(IModelInspector modelinspector, System.Type type, IUnionSubclassAttributesMapper unionSubclassCustomizer)
+		{
+			((IModelExplicitDeclarationsHolder)SimpleModelInspector).AddAsTablePerConcreteClassEntity(type);
 		}
 
 		protected virtual void ComponentParentToFieldAccessor(IModelInspector modelInspector, PropertyPath member, IComponentAttributesMapper componentMapper)

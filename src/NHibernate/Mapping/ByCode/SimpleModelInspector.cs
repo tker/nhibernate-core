@@ -171,6 +171,7 @@ namespace NHibernate.Mapping.ByCode
 		private readonly MixinDeclaredModel declaredModel;
 
 		private Func<System.Type, bool, bool> isEntity = (t, declared) => declared;
+		private Func<System.Type, bool, bool> isDeclaredEntity = (t, declared) => declared;
 		private Func<System.Type, bool, bool> isRootEntity;
 		private Func<System.Type, bool, bool> isTablePerClass;
 		private Func<SplitDefinition, bool, bool> isTablePerClassSplit = (sd, declared) => declared;
@@ -203,6 +204,7 @@ namespace NHibernate.Mapping.ByCode
 		public SimpleModelInspector()
 		{
 			isEntity = (t, declared) => declared || MatchEntity(t);
+			isDeclaredEntity = (t, declared) => declared || MatchDeclaredEntity(t);
 			isRootEntity = (t, declared) => declared || MatchRootEntity(t);
 			isTablePerClass = (t, declared) => declared || MatchTablePerClass(t);
 			isPersistentId = (m, declared) => declared || MatchPoIdPattern(m);
@@ -391,6 +393,17 @@ namespace NHibernate.Mapping.ByCode
 			var modelInspector = (IModelInspector) this;
 			return subject.IsClass &&
 			       subject.GetProperties(flattenHierarchyMembers).Cast<MemberInfo>().Concat(subject.GetFields(flattenHierarchyMembers)).Any(m => modelInspector.IsPersistentId(m));
+		}
+
+		protected bool MatchDeclaredEntity(System.Type subject)
+		{
+			return MatchRootEntity(subject);
+			var modelInspector = (IModelInspector)this;
+			return ((IModelExplicitDeclarationsHolder) this).RootEntities.Contains(subject)
+			       || ((IModelExplicitDeclarationsHolder) this).TablePerClassHierarchyEntities.Contains(subject)
+			       || ((IModelExplicitDeclarationsHolder) this).TablePerClassEntities.Contains(subject)
+			       || ((IModelExplicitDeclarationsHolder) this).TablePerConcreteClassEntities.Contains(subject);
+			return declaredModel.RootEntities.Contains(subject) || declaredModel.HasDelayedEntityRegistration(subject);
 		}
 
 		#region IModelExplicitDeclarationsHolder Members
@@ -690,7 +703,7 @@ namespace NHibernate.Mapping.ByCode
 		bool IModelInspector.IsDeclaredEntity(System.Type type)
 		{
 			bool declaredResult = declaredModel.IsDeclaredEntity(type);
-			return isEntity(type, declaredResult);
+			return isDeclaredEntity(type, declaredResult);
 		}
 
 		bool IModelInspector.IsTablePerClass(System.Type type)

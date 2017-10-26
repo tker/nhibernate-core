@@ -587,7 +587,7 @@ namespace NHibernate.Mapping.ByCode
 			}
 		}
 
-		protected bool HasDelayedEntityRegistration(System.Type type)
+		protected internal bool HasDelayedEntityRegistration(System.Type type)
 		{
 			return delayedEntityRegistrations.ContainsKey(type);
 		}
